@@ -818,16 +818,22 @@ function triggerBootSequence(onComplete) {
 }
 
 // ==========================================================================
-// DOM INITIALIZATION
+// DOM INITIALIZATION (ROBUST READY-STATE GUARD)
 // ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
+function bootstrapDashboard() {
   setupEventListeners();
   checkAuthState();
   initSSE();
   fetchStatus();
   fetchIssues();
   fetchRegisteredVisitors();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootstrapDashboard);
+} else {
+  bootstrapDashboard();
+}
 
 // INITIALIZE REACT BITS GOOEYNAV
 function initGooeyNav() {
