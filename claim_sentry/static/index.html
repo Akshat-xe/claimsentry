@@ -12,6 +12,36 @@
 <body>
 
   <!-- ========================================================
+       STATE 0: SLEEK BRUTALIST BOOTLOADER (2-SECOND LAUNCH SEQUENCE)
+       ======================================================== -->
+  <div id="brutalist-boot-loader" class="bootloader-overlay" style="display: none;">
+    <div class="bootloader-box">
+      <div class="bootloader-header">
+        <span class="bootloader-dot"></span>
+        <span class="bootloader-title">UMBRELLACLAIMS // KERNEL v2.6 ACTIVE</span>
+      </div>
+      <div class="bootloader-lines" id="bootloader-lines">
+        <div class="bootloader-line" id="boot-line-1">
+          <span class="boot-badge-check">✓</span>
+          <span class="boot-text">Authenticating User with Google...</span>
+        </div>
+        <div class="bootloader-line" id="boot-line-2">
+          <span class="boot-badge-check">✓</span>
+          <span class="boot-text">Provisioning NVIDIA NIM 70B Compute Cluster...</span>
+        </div>
+        <div class="bootloader-line" id="boot-line-3">
+          <span class="boot-badge-check">✓</span>
+          <span class="boot-text">5-Model Fallback Cascade Active <span class="boot-highlight">(Nemotron + Codestral + Mistral)</span>...</span>
+        </div>
+        <div class="bootloader-line" id="boot-line-4">
+          <span class="boot-badge-check">✓</span>
+          <span class="boot-text">System Ready! <span class="boot-highlight">(0.00ms latency)</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        STATE 1: AUTH GATE (SIGN IN REQUIRED BEFORE ACCESS)
        ======================================================== -->
   <section class="auth-gate-container" id="view-auth-gate">
@@ -77,7 +107,7 @@
 
       <!-- PAGE 1: TRIAGE DASHBOARD -->
       <section id="page-dashboard">
-        <h1 class="open-header-title">Good morning, Akshat</h1>
+        <h1 class="open-header-title" id="greeting-title">Good morning, Agent</h1>
         <p class="open-header-subtitle">Autonomous Air-Gapped Triage Laboratory • 20-Model Fallback Cascade Active</p>
 
         <!-- HERO FOCUS CARD ("LIVE RIGHT NOW") -->
@@ -105,15 +135,32 @@
             <button class="btn-radiant" id="btn-hero-start">⚡ START TRIAGE</button>
           </div>
 
+          <!-- REACT BITS: LATTICE LOADER EMBED SLOT -->
+          <div id="lattice-loader-slot" style="margin: 14px 0 6px 0; display: none;"></div>
+
           <div class="quick-presets-row">
             <span style="font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 700;">Quick Presets:</span>
             <span class="preset-chip" onclick="setPreset('https://github.com/Newton-School/react-apple-tree')">react-apple-tree</span>
             <span class="preset-chip" onclick="setPreset('https://github.com/Newton-School/grauity')">grauity</span>
             <span class="preset-chip" onclick="setPreset('https://github.com/pallets/flask')">flask</span>
           </div>
+
+          <!-- REAL-TIME LABORATORY TELEMETRY TICKER -->
+          <div class="live-ticker-box" id="dashboard-log-feed">
+            <div class="ticker-header">
+              <div class="ticker-title-group">
+                <span class="ticker-dot-pulse"></span>
+                <span>REAL-TIME LABORATORY TELEMETRY</span>
+              </div>
+              <button class="btn-ticker-expand" onclick="switchPage('terminal')">Expand Full Terminal ↗</button>
+            </div>
+            <div class="ticker-lines" id="ticker-lines-container">
+              <div class="ticker-line"><span class="ticker-ts">[READY]</span> <span>Cascade online. Enter GitHub repository or select preset to commence triage.</span></div>
+            </div>
+          </div>
         </div>
 
-        <!-- PROGRESS RING & METRIC TILES -->
+        <!-- PROGRESS RING & METRIC TILES (DYNAMIC - ZERO FAKE DATA) -->
         <div class="progress-card">
           <div class="progress-header">
             <span class="progress-title">Triage Laboratory Progress</span>
@@ -132,7 +179,7 @@
                   stroke="url(#radiantOrangeGradient)" 
                   stroke-width="8" 
                   stroke-dasharray="238.76" 
-                  stroke-dashoffset="59.69" 
+                  stroke-dashoffset="238.76" 
                   stroke-linecap="round" 
                   fill="none" 
                   style="transition: stroke-dashoffset 0.8s ease;"
@@ -145,36 +192,36 @@
                 </defs>
               </svg>
               <div class="ring-percent-label">
-                <span class="percent-number" id="metric-percent-label">75%</span>
-                <span class="percent-sub">VERIFIED</span>
+                <span class="percent-number" id="metric-percent-label">0%</span>
+                <span class="percent-sub" id="metric-percent-sub">READY</span>
               </div>
             </div>
 
             <div>
-              <h3 style="font-size: 14px; font-weight: 800; color: #fff;" id="metric-status-title">High Confidence Grounding</h3>
+              <h3 style="font-size: 14px; font-weight: 800; color: #fff;" id="metric-status-title">Laboratory Ready</h3>
               <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px;" id="metric-status-sub">
-                Claims tested in air-gapped sandboxes with zero network sockets and stripped environment secrets.
+                Paste any GitHub repository URL or select a Quick Preset to launch autonomous laboratory analysis.
               </p>
             </div>
           </div>
 
           <!-- APPLE HEALTH PROGRESS BAR -->
           <div class="health-bar-track">
-            <div class="health-bar-fill" id="metric-health-bar" style="width: 75%;"></div>
+            <div class="health-bar-fill" id="metric-health-bar" style="width: 0%;"></div>
           </div>
 
           <!-- STAT TILES -->
           <div class="stat-tiles-grid">
             <div class="stat-tile">
-              <div class="stat-value" id="stat-verified-count">8</div>
+              <div class="stat-value" id="stat-verified-count">0</div>
               <div class="stat-desc">Real Bugs Verified</div>
             </div>
             <div class="stat-tile">
-              <div class="stat-value" id="stat-slop-count">3</div>
+              <div class="stat-value" id="stat-slop-count">0</div>
               <div class="stat-desc">Fake Slop Caught</div>
             </div>
             <div class="stat-tile">
-              <div class="stat-value" id="stat-prs-count">1</div>
+              <div class="stat-value" id="stat-prs-count">0</div>
               <div class="stat-desc">Untested PRs Flagged</div>
             </div>
           </div>
@@ -303,9 +350,10 @@
     </div>
   </div>
 
-  <!-- Firebase Modular Compat SDK -->
+  <!-- Firebase Modular Compat SDK & Supabase Client -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
 </html>
