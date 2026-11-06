@@ -1117,6 +1117,16 @@ function setupEventListeners() {
   document.getElementById("proof-modal").addEventListener("click", (e) => {
     if (e.target.id === "proof-modal") closeProofModal();
   });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeProofModal();
+      const terminalModal = document.getElementById("terminal-modal");
+      if (terminalModal && terminalModal.classList.contains("open")) {
+        terminalModal.classList.remove("open");
+      }
+    }
+  });
 }
 
 function setPreset(url) {
