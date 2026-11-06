@@ -29,7 +29,7 @@ try {
 // FIREBASE AUTHENTICATION CONFIGURATION (Hacktoberfest - UmbrellaClaims)
 // ==========================================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyAiGmqmDSuY2mhFiQGImhNQ1zMgkKn_Ms0",
+  apiKey: "AIzaSyAiGmqmDSuY2mhFiqGImhNQ1zMgkKn_Ms0",
   authDomain: "hacktoberfest---umbrellaclaims.firebaseapp.com",
   projectId: "hacktoberfest---umbrellaclaims",
   storageBucket: "hacktoberfest---umbrellaclaims.firebasestorage.app",
@@ -41,14 +41,44 @@ const firebaseConfig = {
 try {
   if (typeof firebase !== "undefined") {
     firebase.initializeApp(firebaseConfig);
-    firebase.auth().onAuthStateChanged((user) => {
+    firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
-        const name = user.displayName || user.email || "Verified Agent";
+        const name = user.displayName || (user.email ? user.email.split("@")[0] : "Verified Agent");
         sessionStorage.setItem("cs_auth_user", name);
         sessionStorage.setItem("cs_auth_email", user.email || "");
         sessionStorage.setItem("cs_auth_uid", user.uid);
-        syncUserProfile(user.uid, user.email, name, user.photoURL);
+        if (user.photoURL) {
+          sessionStorage.setItem("cs_auth_photo", user.photoURL);
+        }
+        await syncUserProfile(user.uid, user.email, name, user.photoURL);
         checkAuthState();
+      } else {
+        sessionStorage.removeItem("cs_auth_user");
+        sessionStorage.removeItem("cs_auth_email");
+        sessionStorage.removeItem("cs_auth_uid");
+        sessionStorage.removeItem("cs_auth_photo");
+        checkAuthState();
+      }
+    });
+
+    firebase.auth().getRedirectResult().then(async (result) => {
+      if (result && result.user) {
+        const user = result.user;
+        const name = user.displayName || (user.email ? user.email.split("@")[0] : "Verified Agent");
+        sessionStorage.setItem("cs_auth_user", name);
+        sessionStorage.setItem("cs_auth_email", user.email || "");
+        sessionStorage.setItem("cs_auth_uid", user.uid);
+        if (user.photoURL) {
+          sessionStorage.setItem("cs_auth_photo", user.photoURL);
+        }
+        await syncUserProfile(user.uid, user.email, name, user.photoURL);
+        checkAuthState();
+        fetchIssues();
+      }
+    }).catch((err) => {
+      console.warn("Redirect sign-in notice:", err);
+      if (err && err.code && err.code !== "auth/credential-already-in-use") {
+        showAuthError(`Redirect sign-in error: ${err.message || err.code}`);
       }
     });
   }
@@ -822,6 +852,37 @@ function initGooeyNav() {
   });
 }
 
+// ==========================================================================
+// AUTHENTICATION & VISITOR AUDIT HELPERS
+// ==========================================================================
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function showAuthError(message) {
+  const errBox = document.getElementById("auth-error-banner");
+  if (errBox) {
+    errBox.innerText = message;
+    errBox.style.display = "block";
+  } else {
+    alert(message);
+  }
+}
+
+function clearAuthError() {
+  const errBox = document.getElementById("auth-error-banner");
+  if (errBox) {
+    errBox.innerText = "";
+    errBox.style.display = "none";
+  }
+}
+
 // AUTH GATE
 function checkAuthState() {
   const isAuth = sessionStorage.getItem("cs_auth_user");
@@ -829,78 +890,109 @@ function checkAuthState() {
   const appMain = document.getElementById("view-app-main");
 
   if (isAuth) {
-    authGate.style.display = "none";
-    appMain.style.display = "block";
+    if (authGate) authGate.style.display = "none";
+    if (appMain) appMain.style.display = "block";
     
     // Dynamic greeting based on first name
     const parts = isAuth.trim().split(/\s+/);
-    const firstName = parts[0] || "Akshat";
+    const firstName = parts[0] || "Agent";
     const greetingEl = document.getElementById("greeting-title");
     if (greetingEl) greetingEl.innerText = `Good morning, ${firstName}`;
 
-    document.getElementById("user-display-name").innerText = isAuth;
-    let initials = "AK";
+    const displayNameEl = document.getElementById("user-display-name");
+    if (displayNameEl) displayNameEl.innerText = isAuth;
+
+    let initials = "AG";
     if (parts.length >= 2) {
       initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     } else if (parts.length === 1 && parts[0].length > 0) {
       initials = parts[0].slice(0, 2).toUpperCase();
     }
-    document.getElementById("user-avatar-monogram").innerText = initials;
+
+    const avatarEl = document.getElementById("user-avatar-monogram");
+    const photoUrl = sessionStorage.getItem("cs_auth_photo");
+    if (avatarEl) {
+      if (photoUrl) {
+        avatarEl.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(isAuth)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.parentElement.innerText='${initials}'">`;
+      } else {
+        avatarEl.innerText = initials;
+      }
+    }
   } else {
-    authGate.style.display = "flex";
-    appMain.style.display = "none";
+    if (authGate) authGate.style.display = "flex";
+    if (appMain) appMain.style.display = "none";
   }
 }
 
 async function handleLogin() {
+  clearAuthError();
   const loginBtn = document.getElementById("btn-login-google");
+  const btnSpan = loginBtn ? loginBtn.querySelector("span") : null;
+  const originalText = btnSpan ? btnSpan.innerText : "CONTINUE WITH GOOGLE";
+
   if (loginBtn) {
     loginBtn.style.opacity = "0.7";
     loginBtn.style.pointerEvents = "none";
+    if (btnSpan) btnSpan.innerText = "OPENING GOOGLE...";
   }
 
   try {
-    if (typeof firebase !== "undefined" && firebase.auth) {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope("email");
-      provider.addScope("profile");
-      const result = await firebase.auth().signInWithPopup(provider);
+    if (typeof firebase === "undefined" || !firebase.auth) {
+      showAuthError("Firebase Authentication service unavailable. Please check internet connection.");
+      return;
+    }
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope("email");
+    provider.addScope("profile");
+    // CRITICAL: Forces Google account selection dialog so any user can log in
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    let result = null;
+    try {
+      result = await firebase.auth().signInWithPopup(provider);
+    } catch (popupErr) {
+      if (popupErr.code === "auth/popup-blocked") {
+        console.warn("Popup blocked by browser, redirecting to Google sign-in...");
+        await firebase.auth().signInWithRedirect(provider);
+        return;
+      }
+      if (popupErr.code === "auth/popup-closed-by-user" || popupErr.code === "auth/cancelled-popup-request") {
+        showAuthError("Sign-in cancelled. Please select a Google account to continue.");
+        return;
+      }
+      throw popupErr;
+    }
+
+    if (result && result.user) {
       const user = result.user;
-      const userName = user.displayName || (user.email ? user.email.split("@")[0] : "Akshat");
+      const userName = user.displayName || (user.email ? user.email.split("@")[0] : "Verified Agent");
       
       sessionStorage.setItem("cs_auth_user", userName);
-      sessionStorage.setItem("cs_auth_email", user.email || "akshatunseen@gmail.com");
+      sessionStorage.setItem("cs_auth_email", user.email || "");
       sessionStorage.setItem("cs_auth_uid", user.uid);
-      syncUserProfile(user.uid, user.email, userName, user.photoURL);
+      if (user.photoURL) {
+        sessionStorage.setItem("cs_auth_photo", user.photoURL);
+      }
+
+      // Record visitor in Supabase database for owner auditing
+      await syncUserProfile(user.uid, user.email, userName, user.photoURL);
 
       triggerBootSequence(() => {
         checkAuthState();
         fetchIssues();
       });
     } else {
-      sessionStorage.setItem("cs_auth_user", "Akshat");
-      sessionStorage.setItem("cs_auth_email", "akshatunseen@gmail.com");
-      triggerBootSequence(() => {
-        checkAuthState();
-        fetchIssues();
-      });
+      showAuthError("No verified Google profile returned. Please try again.");
     }
   } catch (err) {
-    console.error("Google Auth notice:", err);
-    if (err.code === "auth/popup-blocked") {
-      alert("Browser blocked the Google sign-in popup. Please allow popups for this site.");
-    } else if (err.code !== "auth/popup-closed-by-user") {
-      sessionStorage.setItem("cs_auth_user", "Akshat");
-      sessionStorage.setItem("cs_auth_email", "akshatunseen@gmail.com");
-      triggerBootSequence(() => {
-        checkAuthState();
-        fetchIssues();
-      });
-    }
+    console.error("Google Auth error:", err);
+    showAuthError(`Authentication failed: ${err.message || err.code || "Unknown error"}`);
   } finally {
     if (loginBtn) {
       loginBtn.style.opacity = "1";
       loginBtn.style.pointerEvents = "auto";
+      if (btnSpan) btnSpan.innerText = originalText;
     }
   }
 }
@@ -909,25 +1001,78 @@ async function handleSignOut() {
   if (typeof firebase !== "undefined" && firebase.auth) {
     try {
       await firebase.auth().signOut();
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Sign out notice:", e);
+    }
   }
   sessionStorage.removeItem("cs_auth_user");
   sessionStorage.removeItem("cs_auth_email");
   sessionStorage.removeItem("cs_auth_uid");
+  sessionStorage.removeItem("cs_auth_photo");
+  clearAuthError();
   checkAuthState();
 }
 
 async function syncUserProfile(uid, email, displayName, avatarUrl) {
   if (!supabaseClient || !uid) return;
   try {
-    await supabaseClient.from("profiles").upsert({
+    const payload = {
       id: uid,
       email: email || "",
-      display_name: displayName || "",
-      avatar_url: avatarUrl || ""
-    });
+      display_name: displayName || "Verified Agent",
+      avatar_url: avatarUrl || "",
+      updated_at: new Date().toISOString()
+    };
+    const { error } = await supabaseClient.from("profiles").upsert(payload);
+    if (error) {
+      console.warn("Supabase visitor audit sync error:", error);
+    } else {
+      console.log(`[AUDIT] Visitor logged to Supabase: ${email || uid}`);
+    }
   } catch (err) {
     console.warn("Supabase profile sync notice:", err);
+  }
+}
+
+async function fetchRegisteredVisitors() {
+  const container = document.getElementById("visitor-monitor-list");
+  const badge = document.getElementById("visitor-count-badge");
+  if (!container || !supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .order("updated_at", { ascending: false });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = `<div class="terminal-log-row" style="color: rgba(255,255,255,0.4);">No visitor profiles recorded in Supabase yet.</div>`;
+      if (badge) badge.innerText = "0 AUDITED";
+      return;
+    }
+
+    if (badge) badge.innerText = `${data.length} AUDITED`;
+
+    container.innerHTML = data.map((v) => {
+      const timeStr = v.updated_at ? new Date(v.updated_at).toLocaleString() : "Recently";
+      const name = v.display_name || "Anonymous Agent";
+      const email = v.email || "No email";
+      return `
+        <div class="terminal-log-row" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 6px 0;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="log-tag-radiant" style="font-size: 9px; padding: 2px 6px;">${v.id ? v.id.slice(0, 6) : "AUTH"}...</span>
+            <span style="font-weight: 700; color: #fff;">${escapeHtml(name)}</span>
+            <span style="color: var(--text-secondary); font-size: 11px;">(${escapeHtml(email)})</span>
+          </div>
+          <span style="color: rgba(255,255,255,0.4); font-size: 10px;">${timeStr}</span>
+        </div>
+      `;
+    }).join("");
+  } catch (err) {
+    console.warn("fetchRegisteredVisitors error:", err);
+    container.innerHTML = `<div class="terminal-log-row" style="color: #FF3B30;">Failed to load visitor audit: ${escapeHtml(err.message)}</div>`;
   }
 }
 
@@ -943,6 +1088,10 @@ function switchPage(page, syncNav = true) {
   home.style.display = page === "home" ? "block" : "none";
   terminal.style.display = page === "terminal" ? "block" : "none";
   byok.style.display = page === "byok" ? "block" : "none";
+
+  if (page === "terminal") {
+    fetchRegisteredVisitors();
+  }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -1021,7 +1170,7 @@ async function startTriage(repoUrl) {
   const targetUrl = repoUrl.trim();
 
   if (!targetUrl.includes("github.com/")) {
-    alert("Please enter a valid GitHub repository URL (e.g. https://github.com/Akshat-xe/claimsentry)");
+    alert("Please enter a valid GitHub repository URL (e.g. https://github.com/pallets/flask)");
     return;
   }
 
@@ -1223,7 +1372,9 @@ async function runOnlineTriage(owner, repo, repoUrl) {
 
   if (supabaseClient) {
     try {
+      const currentUid = sessionStorage.getItem("cs_auth_uid") || null;
       const { data: runData } = await supabaseClient.from("triage_runs").insert([{
+        user_id: currentUid,
         repo_url: repoUrl,
         repo_name: repo,
         total_claims: allIssues.length,

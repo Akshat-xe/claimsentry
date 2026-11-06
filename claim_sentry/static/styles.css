@@ -119,6 +119,7 @@ body {
   justify-content: center;
   box-shadow: 0 2px 8px rgba(255, 94, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.5);
+  overflow: hidden;
 }
 
 .user-name-label {
@@ -759,6 +760,20 @@ body {
   line-height: 1.6;
   color: var(--text-secondary);
   margin-bottom: 24px;
+}
+
+.auth-error-banner {
+  background: rgba(255, 59, 48, 0.12);
+  border: 1px solid #FF3B30;
+  color: #FF6961;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  text-align: left;
+  word-break: break-word;
 }
 
 .btn-google-login {
