@@ -833,13 +833,19 @@ function checkAuthState() {
     appMain.style.display = "block";
     
     // Dynamic greeting based on first name
-    const firstName = isAuth.split(" ")[0] || "Agent";
+    const parts = isAuth.trim().split(/\s+/);
+    const firstName = parts[0] || "Akshat";
     const greetingEl = document.getElementById("greeting-title");
     if (greetingEl) greetingEl.innerText = `Good morning, ${firstName}`;
 
     document.getElementById("user-display-name").innerText = isAuth;
-    const initials = isAuth.split(" ").map(n => n[0]).join("");
-    document.getElementById("user-avatar-monogram").innerText = initials || "AG";
+    let initials = "AK";
+    if (parts.length >= 2) {
+      initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    } else if (parts.length === 1 && parts[0].length > 0) {
+      initials = parts[0].slice(0, 2).toUpperCase();
+    }
+    document.getElementById("user-avatar-monogram").innerText = initials;
   } else {
     authGate.style.display = "flex";
     appMain.style.display = "none";
@@ -860,10 +866,10 @@ async function handleLogin() {
       provider.addScope("profile");
       const result = await firebase.auth().signInWithPopup(provider);
       const user = result.user;
-      const userName = user.displayName || user.email || "Verified Agent";
+      const userName = user.displayName || (user.email ? user.email.split("@")[0] : "Akshat");
       
       sessionStorage.setItem("cs_auth_user", userName);
-      sessionStorage.setItem("cs_auth_email", user.email || "");
+      sessionStorage.setItem("cs_auth_email", user.email || "akshatunseen@gmail.com");
       sessionStorage.setItem("cs_auth_uid", user.uid);
       syncUserProfile(user.uid, user.email, userName, user.photoURL);
 
@@ -872,7 +878,8 @@ async function handleLogin() {
         fetchIssues();
       });
     } else {
-      sessionStorage.setItem("cs_auth_user", "Bhavesh Kumar");
+      sessionStorage.setItem("cs_auth_user", "Akshat");
+      sessionStorage.setItem("cs_auth_email", "akshatunseen@gmail.com");
       triggerBootSequence(() => {
         checkAuthState();
         fetchIssues();
@@ -883,7 +890,8 @@ async function handleLogin() {
     if (err.code === "auth/popup-blocked") {
       alert("Browser blocked the Google sign-in popup. Please allow popups for this site.");
     } else if (err.code !== "auth/popup-closed-by-user") {
-      sessionStorage.setItem("cs_auth_user", "Bhavesh Kumar");
+      sessionStorage.setItem("cs_auth_user", "Akshat");
+      sessionStorage.setItem("cs_auth_email", "akshatunseen@gmail.com");
       triggerBootSequence(() => {
         checkAuthState();
         fetchIssues();

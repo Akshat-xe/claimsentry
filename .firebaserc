@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "hacktoberfest---umbrellaclaims"
-  }
+  },
+  "targets": {
+    "hacktoberfest---umbrellaclaims": {
+      "hosting": {
+        "app": [
+          "umbrella-claims"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
