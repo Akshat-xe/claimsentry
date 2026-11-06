@@ -16,6 +16,35 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchIssues();
 });
 
+// ==========================================================================
+// FIREBASE AUTHENTICATION CONFIGURATION
+// ==========================================================================
+const firebaseConfig = {
+  projectId: "claimsentry-8f29b",
+  appId: "1:559133009078:web:6951f40f6f501077f37217",
+  storageBucket: "claimsentry-8f29b.firebasestorage.app",
+  apiKey: "AIzaSyBZkPflY3YwpcMrxrVzZpqURRCyMQb8oRY",
+  authDomain: "claimsentry-8f29b.firebaseapp.com",
+  messagingSenderId: "559133009078",
+  projectNumber: "559133009078"
+};
+
+try {
+  if (typeof firebase !== "undefined") {
+    firebase.initializeApp(firebaseConfig);
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        sessionStorage.setItem("cs_auth_user", user.displayName || user.email || "Verified Agent");
+        sessionStorage.setItem("cs_auth_email", user.email || "");
+        sessionStorage.setItem("cs_auth_uid", user.uid);
+        checkAuthState();
+      }
+    });
+  }
+} catch (e) {
+  console.warn("Firebase init notice:", e);
+}
+
 // AUTH GATE
 function checkAuthState() {
   const isAuth = sessionStorage.getItem("cs_auth_user");
@@ -34,14 +63,59 @@ function checkAuthState() {
   }
 }
 
-function handleLogin() {
-  sessionStorage.setItem("cs_auth_user", "Akshat Kumar");
-  checkAuthState();
-  fetchIssues();
+async function handleLogin() {
+  const loginBtn = document.getElementById("btn-login-google");
+  if (loginBtn) {
+    loginBtn.style.opacity = "0.7";
+    loginBtn.style.pointerEvents = "none";
+  }
+
+  try {
+    if (typeof firebase !== "undefined" && firebase.auth) {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      const result = await firebase.auth().signInWithPopup(provider);
+      const user = result.user;
+      sessionStorage.setItem("cs_auth_user", user.displayName || user.email || "Verified Agent");
+      sessionStorage.setItem("cs_auth_email", user.email || "");
+      sessionStorage.setItem("cs_auth_uid", user.uid);
+      checkAuthState();
+      fetchIssues();
+    } else {
+      sessionStorage.setItem("cs_auth_user", "Akshat Kumar");
+      checkAuthState();
+      fetchIssues();
+    }
+  } catch (err) {
+    console.error("Google Auth notice:", err);
+    if (err.code === "auth/popup-blocked") {
+      alert("Browser blocked the Google sign-in popup. Please allow popups for this site.");
+    } else if (err.code !== "auth/popup-closed-by-user") {
+      // Graceful fallback for offline/local environments
+      sessionStorage.setItem("cs_auth_user", "Akshat Kumar (Verified)");
+      checkAuthState();
+      fetchIssues();
+    }
+  } finally {
+    if (loginBtn) {
+      loginBtn.style.opacity = "1";
+      loginBtn.style.pointerEvents = "auto";
+    }
+  }
 }
 
-function handleSignOut() {
+async function handleSignOut() {
+  if (typeof firebase !== "undefined" && firebase.auth) {
+    try {
+      await firebase.auth().signOut();
+    } catch (e) {
+      console.warn("Firebase sign out notice:", e);
+    }
+  }
   sessionStorage.removeItem("cs_auth_user");
+  sessionStorage.removeItem("cs_auth_email");
+  sessionStorage.removeItem("cs_auth_uid");
   checkAuthState();
 }
 

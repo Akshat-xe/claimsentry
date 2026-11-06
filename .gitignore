@@ -13,4 +13,5 @@ local_repos/
 examples/sample_screenshots/gh_*
 *.swp
 *.swo
+.firebase/
 

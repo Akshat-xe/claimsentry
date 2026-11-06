@@ -610,5 +610,15 @@ async def serve_media(file_path: str):
 
 
 # Mount static assets
+@app.get("/styles.css")
+async def serve_root_styles():
+    return FileResponse(STATIC_DIR / "styles.css")
+
+
+@app.get("/app.js")
+async def serve_root_app_js():
+    return FileResponse(STATIC_DIR / "app.js")
+
+
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
