@@ -65,8 +65,8 @@
       </button>
 
       <div style="margin-top: 24px; font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.5;">
-        🔒 Multi-tenant authentication secured by Supabase (Hactoberfest Org).<br>
-        Zero API keys are stored in the database. Air-Gapped: 0.00 MBPS.
+        🔒 Google OAuth session secured by Supabase &amp; Firebase.<br>
+        Untrusted code executed in 0.00 MBPS Air-Gapped Sandbox.
       </div>
     </div>
   </section>
@@ -80,12 +80,12 @@
     <header class="top-navbar">
       <div class="top-navbar-left">
         <h1 class="greeting-heading" id="greeting-title">Good morning, Agent</h1>
-        <p class="greeting-subheading">Autonomous Air-Gapped Triage Laboratory • 20-Model Fallback Cascade Active</p>
+        <p class="greeting-subheading">Air-Gapped Sandbox Execution (0.00 MBPS) • In-Memory AST &amp; Model Cascade</p>
       </div>
 
       <div class="top-navbar-right">
-        <!-- ACCOUNT BUTTON (OPENS POPUP WITH CAPTURED ID DETAILS & SIGN OUT) -->
-        <button class="account-btn-trigger" id="btn-account-toggle" onclick="toggleAccountPopover()" title="Account Details &amp; Sign Out" aria-label="Account details">
+        <!-- ACCOUNT BUTTON (OPENS POPUP WITH USER PROFILE & SIGN OUT) -->
+        <button class="account-btn-trigger" id="btn-account-toggle" onclick="toggleAccountPopover()" title="Account Profile &amp; Sign Out" aria-label="Account details">
           <div class="account-avatar" id="user-avatar-monogram">AG</div>
           <span class="account-badge-online" title="Session Active"></span>
         </button>
@@ -214,7 +214,7 @@
             <div class="terminal-title-group">
               <span class="terminal-pulse-dot"></span>
               <span class="terminal-title-text">REAL-TIME LABORATORY TELEMETRY</span>
-              <span class="badge-airgap-pill">0.00 MBPS AIR-GAPPED</span>
+              <span class="badge-airgap-pill">SANDBOX: 0.00 MBPS (AIR-GAP)</span>
             </div>
             <div class="terminal-actions">
               <button class="btn-terminal-action" id="btn-clear-logs" title="Clear terminal logs">CLEAR</button>
@@ -259,18 +259,14 @@
 
       <div class="popover-divider"></div>
 
-      <div class="popover-section-label">CAPTURED IDENTITY DETAILS</div>
+      <div class="popover-section-label">SESSION &amp; SECURITY</div>
       <div class="popover-info-list">
-        <div class="popover-info-row">
-          <span class="info-key">ACCOUNT ID</span>
-          <span class="info-val font-mono" id="popover-uid">---</span>
-        </div>
         <div class="popover-info-row">
           <span class="info-key">PROVIDER</span>
           <span class="info-val" id="popover-provider">Google OAuth 2.0</span>
         </div>
         <div class="popover-info-row">
-          <span class="info-key">VERIFIED STATUS</span>
+          <span class="info-key">SESSION STATUS</span>
           <span class="info-val badge-verified">✓ Active &amp; Verified</span>
         </div>
         <div class="popover-info-row">
