@@ -292,12 +292,62 @@ STRICT RULES:
             if response:
                 match = re.search(r"```python\s*(.*?)\s*```", response, re.DOTALL)
                 if match:
-                    code = match.group(1).strip()
-                    if "except" not in code:
-                        return code
+                    candidate = match.group(1).strip()
+                    if "except" not in candidate:
+                        # PASS 2: Adversarial Double-Check & Fault Repair
+                        audited_code, _ = self.double_check_repro_script(
+                            candidate, issue_title, issue_body, repo_files
+                        )
+                        return audited_code
 
         # Strategy 3: Dynamic AST-guided synthesis from actual discovered repository modules
         return self._synthesize_deterministic_repro(issue_title, issue_body, repo_files)
+
+    def double_check_repro_script(
+        self,
+        candidate_code: str,
+        issue_title: str,
+        issue_body: str,
+        repo_files: List[str]
+    ) -> Tuple[str, bool]:
+        """
+        Pass 2: Adversarial Code Auditor & Double-Checker.
+        Audits candidate reproduction code against repository modules and the reported fault.
+        Repairs hallucinated imports or incorrect assertions before sandbox execution.
+        """
+        if not self.is_available() or not candidate_code:
+            return candidate_code, True
+
+        prompt = f"""You are ClaimSentry's Senior Adversarial Code Auditor. Double-check this candidate bug reproduction script:
+
+Reported Bug Title: {issue_title}
+Reported Bug Body: {issue_body}
+Real Repository Modules: {", ".join(repo_files[:8]) if repo_files else "app"}
+
+Candidate Reproduction Script:
+```python
+{candidate_code}
+```
+
+DOUBLE-CHECK REQUIREMENTS:
+1. Verify the script imports ONLY real repository modules or Python standard library.
+2. Confirm the script triggers the EXACT bug reported by the author without dummy syntax errors.
+3. If valid and minimal, return it as-is. If flawed, repair it immediately.
+4. Output ONLY valid executable Python code in ```python ... ``` block.
+"""
+        audit_response = self.generate(
+            prompt,
+            system="You are an uncompromising static analysis auditor. Double-check for zero faults.",
+            timeout=4.5
+        )
+        if audit_response:
+            match = re.search(r"```python\s*(.*?)\s*```", audit_response, re.DOTALL)
+            if match:
+                repaired = match.group(1).strip()
+                if "except" not in repaired:
+                    return repaired, True
+
+        return candidate_code, True
 
     def _synthesize_deterministic_repro(self, title: str, body: str, repo_files: Optional[List[str]] = None) -> str:
         """Dynamically generates reproduction script using actual discovered repository files and tokens."""

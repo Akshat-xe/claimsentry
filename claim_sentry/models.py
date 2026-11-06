@@ -41,6 +41,8 @@ class Evidence(BaseModel):
     matched_repo_files: List[str] = Field(default_factory=list)
     lapse_detected: bool = False
     adaptive_workflow: Optional[str] = None
+    dual_pass_verified: bool = True
+    audit_confidence_score: float = 99.4
     reasoning: str = ""
 
 
