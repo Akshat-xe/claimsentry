@@ -1151,7 +1151,7 @@ async function runOnlineTriage(owner, repo, repoUrl) {
           reasoning: isReal
             ? `Sandbox reproduction threw Uncaught Exception on long input vectors.`
             : `AST symbol lookup confirms symbol does not exist in ${owner}/${repo}.`,
-          repro_script: `// Isolated Air-Gapped Test for ${owner}/${repo}\nimport { verify } from "${repo}";\nverify("${escapeHTML(gh.title)}");`
+          repro_script: `// Isolated Air-Gapped Test for ${owner}/${repo}\nimport { verify } from "${repo}";\nverify(${JSON.stringify(gh.title || "Reported Defect")});`
         }
       };
     });
