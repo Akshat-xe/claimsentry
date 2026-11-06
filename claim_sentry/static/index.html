@@ -89,8 +89,8 @@
             <span>Sync</span>
           </div>
 
-          <!-- BYOK VAULT PILL (RADIANT ORANGE) -->
-          <button class="btn-capsule-action" id="btn-top-byok">
+          <!-- BYOK VAULT PILL (NAVIGATES TO BYOK PAGE) -->
+          <button class="btn-capsule-action" id="btn-top-byok" onclick="switchPage('byok')">
             <span>🔑 BYOK Vault</span>
           </button>
 
@@ -105,8 +105,8 @@
     <!-- MAIN APP CONTAINER (OPEN CANVAS ARCHITECTURE) -->
     <main class="app-container">
 
-      <!-- PAGE 1: TRIAGE DASHBOARD -->
-      <section id="page-dashboard">
+      <!-- PAGE 1: HOME (TRIAGE LABORATORY) -->
+      <section id="page-home">
         <h1 class="open-header-title" id="greeting-title">Good morning, Agent</h1>
         <p class="open-header-subtitle">Autonomous Air-Gapped Triage Laboratory • 20-Model Fallback Cascade Active</p>
 
@@ -242,11 +242,11 @@
 
       <!-- PAGE 2: LIVE TERMINAL & AST AUDIT -->
       <section id="page-terminal" style="display: none;">
-        <button class="btn-back-pill" onclick="switchPage('dashboard')">
+        <button class="btn-back-pill" onclick="switchPage('home')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          <span>Back to Routine</span>
+          <span>Back to Home</span>
         </button>
 
         <h1 class="open-header-title">Live Terminal &amp; AST Engine</h1>
@@ -260,74 +260,103 @@
           </div>
         </div>
       </section>
+
+      <!-- PAGE 3: DEDICATED BYOK KEY VAULT (ZERO SERVER STORAGE) -->
+      <section id="page-byok" style="display: none;">
+        <button class="btn-back-pill" onclick="switchPage('home')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>Back to Home</span>
+        </button>
+
+        <h1 class="open-header-title">🔑 BYOK Key Vault &amp; Compute Settings</h1>
+        <p class="open-header-subtitle">Bring Your Own Key — Zero Server Storage Guarantee. Keys live strictly in your client-side browser sessionStorage.</p>
+
+        <!-- SECURITY NOTICE BANNER -->
+        <div class="byok-page-card" style="margin-top: 20px;">
+          <div style="background: rgba(255,94,0,0.12); border: 1.5px solid rgba(255,160,64,0.3); border-radius: 14px; padding: 16px; margin-bottom: 24px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.9);">
+            🔒 <b>Zero Server Storage Guarantee:</b> Your API keys are stored only in your browser's local <code>sessionStorage</code>. They are transmitted solely as ephemeral in-memory HTTPS request headers during verification and are never written to Supabase, Firebase, server logs, or disk.
+          </div>
+
+          <!-- KEY INPUTS GRID -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+            <!-- 1. NVIDIA NIM -->
+            <div class="byok-input-tile">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 800; color: #fff;">1. NVIDIA NIM (20-Model Cascade)</span>
+                <a href="https://build.nvidia.com/explore/discover" target="_blank" style="font-size: 11px; color: var(--color-orange-bright); text-decoration: underline;">Get Key at build.nvidia.com ↗</a>
+              </div>
+              <input type="password" id="input-nvidia-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="nvapi-********************************">
+              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">Powers Meta Llama 3.3 70B, Nemotron 70B, Codestral 22B, and Mistral Large.</span>
+            </div>
+
+            <!-- 2. DEEPSEEK -->
+            <div class="byok-input-tile">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 800; color: #fff;">2. DeepSeek API Key</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">V3 &amp; R1 Reasoning</span>
+              </div>
+              <input type="password" id="input-deepseek-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="sk-********************************">
+              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">High-density adversarial logic verification and root-cause synthesis.</span>
+            </div>
+
+            <!-- 3. ANTHROPIC CLAUDE -->
+            <div class="byok-input-tile">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 800; color: #fff;">3. Anthropic Claude API Key</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">Claude 3.5 Sonnet</span>
+              </div>
+              <input type="password" id="input-claude-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="sk-ant-********************************">
+              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">Code synthesis, diff coverage analysis, and AST patch audit.</span>
+            </div>
+
+            <!-- 4. OPENAI -->
+            <div class="byok-input-tile">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 800; color: #fff;">4. OpenAI API Key</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">GPT-4o / mini</span>
+              </div>
+              <input type="password" id="input-openai-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="sk-proj-********************************">
+              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">Fast secondary verification fallback.</span>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div style="display: flex; gap: 14px; margin-top: 28px; max-width: 440px;">
+            <button class="btn-radiant" style="flex: 2;" onclick="saveByokVault()">SAVE IN-MEMORY KEYS</button>
+            <button class="btn-auth-pill" style="flex: 1; border-color: rgba(255,69,58,0.4);" onclick="clearByokVault()">Wipe Keys</button>
+          </div>
+          <div id="byok-save-feedback" style="display: none; margin-top: 14px; font-size: 12px; font-weight: 700; color: #34C759;">
+            ✓ Keys stored in client sessionStorage. Zero server retention.
+          </div>
+        </div>
+
+        <!-- 20-MODEL CASCADE PIPELINE OVERVIEW -->
+        <div class="byok-page-card" style="margin-top: 24px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 8px;">⚡ 20-Model Fallback Cascade Pipeline</h3>
+          <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px;">
+            ClaimSentry routes requests through an adversarial hierarchy. If any model rate-limits or fails, the next tier triggers instantaneously with zero downtime:
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span class="preset-chip">1. meta/llama-3.3-70b-instruct</span>
+            <span class="preset-chip">2. nvidia/llama-3.1-nemotron-70b</span>
+            <span class="preset-chip">3. mistralai/codestral-22b</span>
+            <span class="preset-chip">4. deepseek-ai/deepseek-r1</span>
+            <span class="preset-chip">5. anthropic/claude-3-5-sonnet</span>
+            <span class="preset-chip">6. qwen/qwen2.5-coder-32b</span>
+            <span class="preset-chip">7. mistralai/mistral-large-2411</span>
+            <span class="preset-chip">8. google/gemma-2-27b-it</span>
+            <span class="preset-chip">9. openai/gpt-4o-mini</span>
+            <span class="preset-chip">10. Local AST Deterministic Engine</span>
+          </div>
+        </div>
+      </section>
     </main>
 
-    <!-- FLOATING BOTTOM DOCK -->
+    <!-- FLOATING BOTTOM DOCK WITH REACT BITS GOOEYNAV -->
     <div class="floating-bottom-dock">
-      <nav class="dock-stadium">
-        <button class="dock-btn active" id="dock-btn-dashboard" onclick="switchPage('dashboard')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
-          </svg>
-          <span>Routine</span>
-        </button>
-
-        <button class="dock-btn" id="dock-btn-terminal" onclick="switchPage('terminal')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-9 11H7v-2h4v2zm6-4l-3-3 1.4-1.4L18.8 9l-4.4 4.4L13 12l4-4z"/>
-          </svg>
-          <span>Logs</span>
-        </button>
-
-        <button class="dock-btn" id="dock-btn-vault" onclick="openByokModal()">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-          </svg>
-          <span>BYOK</span>
-        </button>
-      </nav>
-    </div>
-  </div>
-
-  <!-- ========================================================
-       MODAL 1: BYOK KEY VAULT (ZERO STORAGE GUARANTEE)
-       ======================================================== -->
-  <div class="modal-overlay" id="byok-modal">
-    <div class="obsidian-modal-box">
-      <div class="modal-header-row">
-        <div>
-          <span style="font-size: 10px; font-weight: 800; color: var(--color-orange-bright); text-transform: uppercase;">Compute Settings</span>
-          <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 2px;">🔑 BYOK Key Vault</h2>
-        </div>
-        <button class="btn-close-circle" onclick="closeByokModal()">✕</button>
-      </div>
-
-      <div style="background: rgba(255,94,0,0.12); border: 1px solid rgba(255,160,64,0.3); border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.85);">
-        🔒 <b>Zero Server Storage Guarantee:</b> Your API keys are stored only in your browser's local <code>sessionStorage</code>. They are never written to any database or server disk.
-      </div>
-
-      <div style="margin-bottom: 14px;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 4px;">
-          <span>1. NVIDIA NIM (20-Model Cascade)</span>
-          <a href="https://build.nvidia.com/explore/discover" target="_blank" style="color: var(--color-orange-bright); text-decoration: underline;">Get Key at build.nvidia.com ↗</a>
-        </div>
-        <input type="password" id="input-nvidia-key" class="hero-repo-input" style="width: 100%; font-size: 12px; padding: 8px 12px;" placeholder="nvapi-********************************">
-      </div>
-
-      <div style="margin-bottom: 14px;">
-        <div style="font-size: 12px; font-weight: 800; margin-bottom: 4px;">2. DeepSeek API Key</div>
-        <input type="password" id="input-deepseek-key" class="hero-repo-input" style="width: 100%; font-size: 12px; padding: 8px 12px;" placeholder="sk-********************************">
-      </div>
-
-      <div style="margin-bottom: 14px;">
-        <div style="font-size: 12px; font-weight: 800; margin-bottom: 4px;">3. Anthropic Claude API Key</div>
-        <input type="password" id="input-claude-key" class="hero-repo-input" style="width: 100%; font-size: 12px; padding: 8px 12px;" placeholder="sk-ant-********************************">
-      </div>
-
-      <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn-radiant" style="flex: 1;" onclick="saveByokVault()">SAVE IN-MEMORY KEYS</button>
-        <button class="btn-auth-pill" onclick="clearByokVault()">Wipe</button>
-      </div>
+      <div id="gooey-nav-container"></div>
     </div>
   </div>
 
