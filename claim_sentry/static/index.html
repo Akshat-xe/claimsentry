@@ -85,7 +85,7 @@
 
       <div class="top-navbar-right">
         <!-- ACCOUNT BUTTON (OPENS POPUP WITH CAPTURED ID DETAILS & SIGN OUT) -->
-        <button class="account-btn-trigger" id="btn-account-toggle" title="Account Details &amp; Sign Out" aria-label="Account details">
+        <button class="account-btn-trigger" id="btn-account-toggle" onclick="toggleAccountPopover()" title="Account Details &amp; Sign Out" aria-label="Account details">
           <div class="account-avatar" id="user-avatar-monogram">AG</div>
           <span class="account-badge-online" title="Session Active"></span>
         </button>
@@ -254,7 +254,7 @@
           <div class="popover-name" id="popover-name">Bhavesh Kumar</div>
           <div class="popover-email" id="popover-email">akshatunseen@gmail.com</div>
         </div>
-        <button class="popover-close-btn" id="btn-close-popover" title="Close">✕</button>
+        <button class="popover-close-btn" id="btn-close-popover" onclick="closeAccountPopover()" title="Close">✕</button>
       </div>
 
       <div class="popover-divider"></div>
@@ -286,7 +286,7 @@
       <div class="popover-divider"></div>
 
       <div class="popover-footer">
-        <button class="btn-popover-signout" id="btn-popup-sign-out">
+        <button class="btn-popover-signout" id="btn-popup-sign-out" onclick="handleSignOut()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>

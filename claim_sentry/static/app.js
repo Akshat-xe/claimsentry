@@ -1122,6 +1122,19 @@ async function fetchRegisteredVisitors() {
   }
 }
 
+// ACCOUNT POPOVER CONTROLLERS
+function toggleAccountPopover() {
+  const popover = document.getElementById("account-popover");
+  if (!popover) return;
+  const isVisible = popover.style.display === "block";
+  popover.style.display = isVisible ? "none" : "block";
+}
+
+function closeAccountPopover() {
+  const popover = document.getElementById("account-popover");
+  if (popover) popover.style.display = "none";
+}
+
 // MULTI-PAGE NAVIGATION (FALLBACK COMPATIBILITY)
 function switchPage(page) {
   currentPage = page;
