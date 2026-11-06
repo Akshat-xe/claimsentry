@@ -26,16 +26,16 @@ try {
 }
 
 // ==========================================================================
-// FIREBASE AUTHENTICATION CONFIGURATION
+// FIREBASE AUTHENTICATION CONFIGURATION (Hacktoberfest - UmbrellaClaims)
 // ==========================================================================
 const firebaseConfig = {
-  projectId: "claimsentry-8f29b",
-  appId: "1:559133009078:web:6951f40f6f501077f37217",
-  storageBucket: "claimsentry-8f29b.firebasestorage.app",
-  apiKey: "AIzaSyBZkPflY3YwpcMrxrVzZpqURRCyMQb8oRY",
-  authDomain: "claimsentry-8f29b.firebaseapp.com",
-  messagingSenderId: "559133009078",
-  projectNumber: "559133009078"
+  apiKey: "AIzaSyAiGmqmDSuY2mhFiQGImhNQ1zMgkKn_Ms0",
+  authDomain: "hacktoberfest---umbrellaclaims.firebaseapp.com",
+  projectId: "hacktoberfest---umbrellaclaims",
+  storageBucket: "hacktoberfest---umbrellaclaims.firebasestorage.app",
+  messagingSenderId: "77974173615",
+  appId: "1:77974173615:web:0f53b04a92d9500cec215a",
+  measurementId: "G-3J3GYT45DN"
 };
 
 try {
