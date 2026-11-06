@@ -1274,9 +1274,18 @@ function setupEventListeners() {
 
 function setPreset(url) {
   const input = document.getElementById("input-repo-url");
-  input.value = url;
+  if (input) input.value = url;
   startTriage(url);
 }
+
+// Global window bindings for HTML onclick & external triggers
+window.setPreset = setPreset;
+window.startTriage = startTriage;
+window.toggleCascadeModal = toggleCascadeModal;
+window.closeCascadeModal = closeCascadeModal;
+window.toggleAccountPopover = toggleAccountPopover;
+window.closeAccountPopover = closeAccountPopover;
+window.handleSignOut = handleSignOut;
 
 function applyFilter(filter) {
   currentFilter = filter;
