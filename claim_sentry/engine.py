@@ -34,6 +34,7 @@ class ClaimSentryEngine:
         self.issues: List[Issue] = []
         self.logs: List[LogEvent] = []
         self.telemetry = Telemetry()
+        self.platform_mode = "APPLE_SILICON_AST"
 
     def update_target_repo(self, new_repo_dir: Path):
         """Updates target repository and refreshes all verifiers and symbol tables."""

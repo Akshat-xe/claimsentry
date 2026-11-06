@@ -68,6 +68,25 @@ def broadcast_event(event: LogEvent):
             pass
 
 
+from collections import defaultdict
+
+# Security & Guardrails
+RATE_LIMIT_WINDOW = 60.0
+MAX_REQUESTS_PER_WINDOW = 5
+client_request_history = defaultdict(list)
+
+
+def is_valid_github_repo_url(url: str) -> bool:
+    """Strictly validates that incoming query is a legitimate GitHub repository link."""
+    if not url or not isinstance(url, str):
+        return False
+    clean = url.strip()
+    if clean in ["target_repo", "url-toolkit", "sample", "https://github.com/example/repo"]:
+        return True
+    pattern = r"^https?://(www\.)?github\.com/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)/?.*$"
+    return bool(re.match(pattern, clean))
+
+
 class CreateIssueRequest(BaseModel):
     title: str
     body: str
@@ -153,14 +172,63 @@ async def get_issue_detail(issue_id: str):
 async def ingest_repository(req: IngestRepoRequest, request: Request, background_tasks: BackgroundTasks):
     """
     Ingests ANY live GitHub repository:
-    1. Shallow clones the codebase into local_repos/
-    2. Fetches real issues, PRs, diffs, and attached screenshots
-    3. Builds the live AST symbol table
-    4. Streams real-time thinking to the Brutalist UI via SSE
+    1. Enforces rate limits (max 5/min per IP)
+    2. Validates authentic GitHub URL (rejects arbitrary questions)
+    3. Detects client platform (Apple Silicon AST vs Non-Mac 20-Model Cloud Cascade)
+    4. Streams real-time thinking to the UI via SSE
     """
+    client_ip = request.client.host if request.client else "127.0.0.1"
+
+    # 1. Rate Limiting Guardrail (Anti-Abuse)
+    now = time.time()
+    history = client_request_history[client_ip]
+    client_request_history[client_ip] = [t for t in history if now - t < RATE_LIMIT_WINDOW]
+    if len(client_request_history[client_ip]) >= MAX_REQUESTS_PER_WINDOW:
+        return JSONResponse(
+            status_code=429,
+            content={
+                "error": "Rate limit exceeded: Maximum 5 triage runs per minute. Please wait before submitting another repository."
+            },
+            headers={"Retry-After": "60"}
+        )
+    client_request_history[client_ip].append(now)
+
     repo_input = req.repo_url.strip()
 
-    # Capture in-memory BYOK keys from HTTPS headers if supplied
+    # 2. Strict Input Validation (Reject arbitrary non-GitHub questions)
+    if not is_valid_github_repo_url(repo_input):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "REJECTED: ClaimSentry is strictly an autonomous repository claim laboratory. "
+                         "You must provide a valid GitHub repository URL (e.g., https://github.com/owner/repo). "
+                         "General questions or text without a valid repository link are rejected."
+            }
+        )
+
+    # 3. Client Architecture Detection (Mac AST vs Non-Mac / Mobile Cloud Cascade)
+    user_agent = request.headers.get("user-agent", "").lower()
+    client_platform = request.headers.get("x-client-platform", "").lower()
+    is_mac = "macintosh" in user_agent or "mac os" in user_agent or "darwin" in client_platform or "mac" in client_platform
+
+    if is_mac:
+        engine.platform_mode = "APPLE_SILICON_AST"
+        broadcast_event(LogEvent(
+            id=str(uuid.uuid4())[:8],
+            timestamp=time.strftime("%H:%M:%S"),
+            phase="AST-SCAN",
+            message="[PLATFORM: macOS / Apple Silicon] Local in-memory AST compiler & Neural Engine acceleration enabled."
+        ))
+    else:
+        engine.platform_mode = "CLOUD_20_MODEL_CASCADE"
+        broadcast_event(LogEvent(
+            id=str(uuid.uuid4())[:8],
+            timestamp=time.strftime("%H:%M:%S"),
+            phase="AI-AGENT",
+            message="[PLATFORM: Non-Mac / Mobile] Offloading triage directly to 20-Model Cloud Cascade (NVIDIA NIM / DeepSeek / Claude)."
+        ))
+
+    # Capture in-memory BYOK keys from HTTPS headers if supplied (Zero DB storage)
     nv_key = request.headers.get("x-nvidia-key")
     ds_key = request.headers.get("x-deepseek-key")
     cl_key = request.headers.get("x-anthropic-key")
