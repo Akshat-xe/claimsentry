@@ -105,51 +105,39 @@ class ClaimSentryEngine:
         return issue
 
     def _enrich_plain_language_verdict(self, issue: Issue):
-        """Generates plain human language descriptions for what user wrote, how we tested, and verdict."""
-        if not issue.what_user_wrote:
-            issue.what_user_wrote = (issue.body.strip() if issue.body.strip() else issue.title)[:400]
-
-        files_count = len(self.symbol_index.scanned_files) or 5
+        """Generates dynamic, rich, non-repetitive plain language descriptions for every issue."""
         is_js_ts = any(f.endswith((".ts", ".tsx", ".js", ".jsx")) for f in self.symbol_index.scanned_files)
+        matched_files = issue.evidence.matched_repo_files if issue.evidence else []
+        symbols = issue.evidence.scanned_symbols if issue.evidence else []
+        exit_code = issue.evidence.exit_code if issue.evidence else 0
+        stderr = issue.evidence.stderr if issue.evidence else ""
+        exec_ms = issue.evidence.execution_time_ms if issue.evidence else 15.0
+        verdict_str = issue.verdict_badge or (issue.verdict.value if issue.verdict else "UNKNOWN")
 
-        # 1. How we tested
-        if issue.evidence and issue.evidence.lapse_detected:
-            issue.how_we_tested = "Initial sandbox test produced a testing lapse (unlinked/synthetic mock import). Adaptive Healing Workflow re-grounded the claim against in-memory AST and verified the defect/symbol."
-        elif issue.has_screenshot or issue.has_video or issue.type == IssueType.MULTIMODAL:
-            issue.how_we_tested = "We extracted visual text and error messages using Apple Silicon Neural Engine OCR (and OpenCV keyframes for videos), then checked whether those exact error strings exist in the repository."
-        elif issue.type == IssueType.SECURITY or "cve" in issue.title.lower() or "rce" in issue.title.lower():
-            issue.how_we_tested = f"We scanned the Abstract Syntax Tree (AST) across all {files_count} files in the repository to check if the claimed vulnerable function or symbol actually exists."
-        elif issue.type == IssueType.PULL_REQUEST:
-            issue.how_we_tested = "We analyzed the git diff patch, executed the test suite with line-by-line coverage in an isolated sandbox, and checked if the newly modified lines were actually executed by any test."
-        elif is_js_ts:
-            issue.how_we_tested = f"We performed an AST symbol and component hierarchy audit across {files_count} files, and cross-referenced with component unit test suites in an air-gapped sandbox."
-        else:
-            issue.how_we_tested = "We ran an air-gapped sandbox without network access. Our local Qwen 2.5 Coder synthesized a minimal reproduction test from the reported bug steps and executed it against the codebase."
-
-        # 2. Our view & verdict in normal language
+        # Determine boolean is_real_issue
         if issue.verdict == VerdictStatus.VERIFIED_TRUE:
             issue.is_real_issue = True
-            if issue.type == IssueType.BUG:
-                if is_js_ts:
-                    issue.our_verdict_explanation = "✓ REAL ISSUE: We inspected the component in the codebase. The reported component and props exist, and the reported issue was verified."
-                else:
-                    issue.our_verdict_explanation = "✓ REAL ISSUE: We ran the reproduction script in our sandbox and the code crashed with the exact claimed error. This is a genuine bug that needs fixing."
-            elif issue.type == IssueType.PULL_REQUEST:
-                issue.our_verdict_explanation = "✓ REAL PR: The modified code is thoroughly exercised and verified by tests (Diff coverage >= 80%)."
-            else:
-                issue.our_verdict_explanation = "✓ REAL CLAIM: The claimed behavior or error strings match actual repository code."
-        elif issue.verdict == VerdictStatus.FAKE_SLOP:
-            issue.is_real_issue = False
-            issue.our_verdict_explanation = "✗ FAKE CLAIM / AI SLOP: The function, component, or symbol claimed in this report does NOT exist anywhere in the codebase. This is a fabricated or hallucinated report."
-        elif issue.verdict == VerdictStatus.UNTESTED_PR:
-            issue.is_real_issue = False
-            issue.our_verdict_explanation = "! UNTESTED PR: The code changes have 0% test coverage. The claim that tests were added is false."
-        elif issue.verdict == VerdictStatus.MISMATCHED_MEDIA:
-            issue.is_real_issue = False
-            issue.our_verdict_explanation = "✗ FAKE / MISMATCHED MEDIA: The attached image or video does not match any error messages or code in this repository."
         else:
             issue.is_real_issue = False
-            issue.our_verdict_explanation = "✗ UNVERIFIED: The reproduction script ran cleanly without triggering any crash or error."
+
+        # Generate unique, contextual explanation eliminating repetitive responses
+        what_wrote, how_tested, verdict_expl = self.llm.generate_dynamic_triage_explanation(
+            issue_title=issue.title,
+            issue_body=issue.body,
+            issue_type=issue.type.value if hasattr(issue.type, "value") else str(issue.type),
+            repo_name=self.repo_dir.name,
+            verdict=verdict_str,
+            symbols_scanned=symbols,
+            matched_files=matched_files,
+            exit_code=exit_code,
+            stderr=stderr,
+            execution_time_ms=exec_ms,
+            is_js_ts=is_js_ts
+        )
+
+        issue.what_user_wrote = what_wrote
+        issue.how_we_tested = how_tested
+        issue.our_verdict_explanation = verdict_expl
 
     def triage_all(self, event_callback: Optional[Callable[[LogEvent], None]] = None) -> List[Issue]:
         """Runs the complete verification pipeline over all loaded issues."""

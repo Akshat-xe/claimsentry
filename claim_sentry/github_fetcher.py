@@ -5,14 +5,14 @@ from any GitHub repository using authenticated gh CLI token or public REST API,
 and performs shallow git clone into local_cache for locked-down sandbox analysis.
 """
 
+import json
 import os
 import re
-import json
-import urllib.request
-import urllib.error
 import subprocess
+import urllib.error
+import urllib.request
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .models import Issue, IssueType
 
@@ -29,7 +29,7 @@ def get_github_token() -> Optional[str]:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=3.0
+            timeout=3.0,
         )
         if proc.returncode == 0 and proc.stdout.strip():
             return proc.stdout.strip()
@@ -57,7 +57,9 @@ def parse_github_url(url: str) -> Tuple[str, str]:
     parts = clean.split("/")
     if len(parts) >= 2:
         return parts[0], parts[1]
-    raise ValueError(f"Invalid GitHub repository specifier: '{url}'. Expected 'owner/repo' or 'https://github.com/owner/repo'.")
+    raise ValueError(
+        f"Invalid GitHub repository specifier: '{url}'. Expected 'owner/repo' or 'https://github.com/owner/repo'."
+    )
 
 
 def clone_github_repo(owner: str, repo: str, target_dir: Path) -> Path:
@@ -71,11 +73,11 @@ def clone_github_repo(owner: str, repo: str, target_dir: Path) -> Path:
     clone_url = f"https://github.com/{owner}/{repo}.git"
     try:
         subprocess.run(
-            ["git", "clone", "--depth", "1", clone_url, str(repo_path)],
+            ["git", "clone", "--depth", "4", clone_url, str(repo_path)],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=45.0
+            timeout=45.0,
         )
     except Exception:
         repo_path.mkdir(parents=True, exist_ok=True)
@@ -83,7 +85,9 @@ def clone_github_repo(owner: str, repo: str, target_dir: Path) -> Path:
     return repo_path
 
 
-def download_attached_media(image_url: str, output_path: Path, token: Optional[str] = None) -> bool:
+def download_attached_media(
+    image_url: str, output_path: Path, token: Optional[str] = None
+) -> bool:
     """Downloads an image or video attached in a GitHub issue markdown body."""
     try:
         req = urllib.request.Request(image_url)
@@ -105,7 +109,7 @@ def fetch_github_issues(
     repo: str,
     max_count: Optional[int] = None,
     media_dir: Optional[Path] = None,
-    token: Optional[str] = None
+    token: Optional[str] = None,
 ) -> List[Issue]:
     """
     Fetches ALL real open issues and pull requests from GitHub API using pagination.
@@ -114,7 +118,7 @@ def fetch_github_issues(
     token = token or get_github_token()
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "ClaimSentry-Autonomous-Triage"
+        "User-Agent": "ClaimSentry-Autonomous-Triage",
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
@@ -169,7 +173,7 @@ def _parse_github_items(
     owner: str,
     repo: str,
     token: Optional[str] = None,
-    media_dir: Optional[Path] = None
+    media_dir: Optional[Path] = None,
 ) -> List[Issue]:
     """Helper to convert GitHub API issue dicts into ClaimSentry Issue models."""
     parsed_issues: List[Issue] = []
@@ -190,7 +194,9 @@ def _parse_github_items(
 
         # Extract image / video links from markdown body
         img_matches = re.findall(r"!\[.*?\]\((https?://[^\s\)]+)\)", body)
-        asset_matches = re.findall(r"(https?://github\.com/user-attachments/assets/[a-zA-Z0-9\-]+)", body)
+        asset_matches = re.findall(
+            r"(https?://github\.com/user-attachments/assets/[a-zA-Z0-9\-]+)", body
+        )
         all_media = img_matches + asset_matches
 
         has_screenshot = False
@@ -227,8 +233,8 @@ def _parse_github_items(
                     headers={
                         "Authorization": f"Bearer {token}",
                         "Accept": "application/vnd.github.v3.diff",
-                        "User-Agent": "ClaimSentry"
-                    }
+                        "User-Agent": "ClaimSentry",
+                    },
                 )
                 with urllib.request.urlopen(diff_req, timeout=2.0) as diff_resp:
                     pr_diff = diff_resp.read().decode("utf-8", errors="ignore")[:4000]
@@ -242,30 +248,45 @@ def _parse_github_items(
             issue_type = IssueType.MULTIMODAL
         elif is_pr:
             issue_type = IssueType.PULL_REQUEST
-        elif any(sec in combined_text for sec in ["cve", "vulnerability", "security", "rce", "injection", "overflow", "leak"]):
+        elif any(
+            sec in combined_text
+            for sec in [
+                "cve",
+                "vulnerability",
+                "security",
+                "rce",
+                "injection",
+                "overflow",
+                "leak",
+            ]
+        ):
             issue_type = IssueType.SECURITY
         else:
             issue_type = IssueType.BUG
 
-        clean_what_user_wrote = body.strip() if body.strip() else f"User reported: '{title}'"
+        clean_what_user_wrote = (
+            body.strip() if body.strip() else f"User reported: '{title}'"
+        )
 
-        parsed_issues.append(Issue(
-            id=f"GH-{number}",
-            number=number,
-            title=title,
-            body=body,
-            type=issue_type,
-            author=author,
-            labels=labels,
-            created_at=item.get("created_at", ""),
-            has_screenshot=has_screenshot,
-            screenshot_path=screenshot_path,
-            has_video=has_video,
-            video_path=video_path,
-            pr_diff=pr_diff,
-            claim_summary=title,
-            what_user_wrote=clean_what_user_wrote[:500]
-        ))
+        parsed_issues.append(
+            Issue(
+                id=f"GH-{number}",
+                number=number,
+                title=title,
+                body=body,
+                type=issue_type,
+                author=author,
+                labels=labels,
+                created_at=item.get("created_at", ""),
+                has_screenshot=has_screenshot,
+                screenshot_path=screenshot_path,
+                has_video=has_video,
+                video_path=video_path,
+                pr_diff=pr_diff,
+                claim_summary=title,
+                what_user_wrote=clean_what_user_wrote[:500],
+            )
+        )
 
     return parsed_issues
 
@@ -275,13 +296,13 @@ def fetch_single_github_issue(
     repo: str,
     issue_number: int,
     token: Optional[str] = None,
-    media_dir: Optional[Path] = None
+    media_dir: Optional[Path] = None,
 ) -> Optional[Issue]:
     """Fetches and parses a single specific GitHub issue or pull request."""
     token = token or get_github_token()
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "ClaimSentry-Autonomous-Triage"
+        "User-Agent": "ClaimSentry-Autonomous-Triage",
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
@@ -300,13 +321,21 @@ def fetch_single_github_issue(
 def format_evidence_comment(issue: Issue) -> str:
     """Formats an Issue's evidence dossier into GitHub Flavored Markdown for bot comments."""
     ev = issue.evidence
-    badge = issue.verdict_badge or ("✓ REAL ISSUE" if issue.is_real_issue else "✗ FAKE / UNVERIFIED")
+    badge = issue.verdict_badge or (
+        "✓ REAL ISSUE" if issue.is_real_issue else "✗ FAKE / UNVERIFIED"
+    )
     headline = issue.verdict_headline or "Claim verified in air-gapped sandbox"
-    duration = f"{ev.execution_time_ms:.1f}ms" if ev and ev.execution_time_ms else "Instant"
+    duration = (
+        f"{ev.execution_time_ms:.1f}ms" if ev and ev.execution_time_ms else "Instant"
+    )
 
     repro_code = (ev.repro_script if ev and ev.repro_script else "").strip()
     exec_output = (ev.stdout if ev and ev.stdout else "").strip()
-    proof_block = repro_code or exec_output or "Static AST verification confirmed invariant existence."
+    proof_block = (
+        repro_code
+        or exec_output
+        or "Static AST verification confirmed invariant existence."
+    )
 
     comment = f"""### ⚡ ClaimSentry Autonomous Claim Verification
 
@@ -321,10 +350,10 @@ def format_evidence_comment(issue: Issue) -> str:
 > {issue.what_user_wrote or issue.title}
 
 #### 🧪 How We Tested It (In Isolated Sandbox)
-{issue.how_we_tested or 'Synthesized minimal reproduction script and executed in air-gapped process sandbox.'}
+{issue.how_we_tested or "Synthesized minimal reproduction script and executed in air-gapped process sandbox."}
 
 #### ⚖️ Verdict & Why
-{issue.our_verdict_explanation or (ev.reasoning if ev else 'Verified against repository AST and runtime invariants.')}
+{issue.our_verdict_explanation or (ev.reasoning if ev else "Verified against repository AST and runtime invariants.")}
 
 <details>
 <summary><b>🔍 View Technical Reproduction Proof & Trace</b></summary>
@@ -340,7 +369,13 @@ def format_evidence_comment(issue: Issue) -> str:
     return comment.strip()
 
 
-def post_github_comment(owner: str, repo: str, issue_number: int, comment_body: str, token: Optional[str] = None) -> bool:
+def post_github_comment(
+    owner: str,
+    repo: str,
+    issue_number: int,
+    comment_body: str,
+    token: Optional[str] = None,
+) -> bool:
     """Posts an evidence verification comment to a GitHub issue or PR."""
     token = token or get_github_token()
 
@@ -356,9 +391,9 @@ def post_github_comment(owner: str, repo: str, issue_number: int, comment_body: 
                     "Authorization": f"Bearer {token}",
                     "Accept": "application/vnd.github.v3+json",
                     "Content-Type": "application/json",
-                    "User-Agent": "ClaimSentry-Bot"
+                    "User-Agent": "ClaimSentry-Bot",
                 },
-                method="POST"
+                method="POST",
             )
             with urllib.request.urlopen(req, timeout=8.0) as resp:
                 if resp.status in (200, 201):
@@ -369,13 +404,21 @@ def post_github_comment(owner: str, repo: str, issue_number: int, comment_body: 
     # Fall back to authenticated gh CLI
     try:
         proc = subprocess.run(
-            ["gh", "issue", "comment", str(issue_number), "--repo", f"{owner}/{repo}", "--body", comment_body],
+            [
+                "gh",
+                "issue",
+                "comment",
+                str(issue_number),
+                "--repo",
+                f"{owner}/{repo}",
+                "--body",
+                comment_body,
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=8.0
+            timeout=8.0,
         )
         return proc.returncode == 0
     except Exception:
         return False
-

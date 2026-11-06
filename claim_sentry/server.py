@@ -50,10 +50,8 @@ SAMPLE_ISSUES_PATH = BASE_DIR / "examples" / "sample_issues.json"
 LOCAL_REPOS_CACHE = BASE_DIR / "local_repos"
 LOCAL_REPOS_CACHE.mkdir(parents=True, exist_ok=True)
 
-# Select best available model (Qwen 7B if pulled, else 1.5B)
-home_models = Path.home() / ".ollama" / "models" / "manifests" / "registry.ollama.ai" / "library" / "qwen2.5-coder" / "7b"
-default_coder = "qwen2.5-coder:7b" if home_models.exists() else "qwen2.5-coder:1.5b"
-llm_engine = LocalLLMEngine(coder_model=default_coder)
+# Initialize Cloud & BYOK Multi-Tier AI Engine (NVIDIA NIM 5-Model Fallback + DeepSeek + Claude)
+llm_engine = LocalLLMEngine()
 engine = ClaimSentryEngine(repo_dir=TARGET_REPO_DIR, llm_engine=llm_engine)
 engine.load_issues_from_json(SAMPLE_ISSUES_PATH)
 
@@ -94,10 +92,32 @@ async def serve_index():
     return HTMLResponse("<h3>ClaimSentry Server Running. UI files loading...</h3>")
 
 
+class ByokKeysRequest(BaseModel):
+    nvidia_api_key: Optional[str] = None
+    deepseek_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+
+
+@app.post("/api/byok/keys")
+async def set_byok_keys(req: ByokKeysRequest):
+    """Sets in-memory BYOK keys for the current runtime session. Zero DB persistence."""
+    llm_engine.set_keys(
+        nvidia_key=req.nvidia_api_key,
+        deepseek_key=req.deepseek_api_key,
+        claude_key=req.anthropic_api_key,
+        openai_key=req.openai_api_key
+    )
+    return {
+        "status": "success",
+        "active_provider": llm_engine.get_active_provider_info(),
+        "is_available": llm_engine.is_available()
+    }
+
+
 @app.get("/api/status")
 async def get_status():
-    # Dynamically check if 7B is active
-    active_m = "Qwen 2.5 Coder 7B (Apple Silicon M5 Metal GPU)" if llm_engine.coder_model == "qwen2.5-coder:7b" else "Qwen 2.5 Coder (Apple Silicon M5 Metal GPU)"
+    active_m = llm_engine.get_active_provider_info()
     return {
         "status": "ready",
         "sandbox_isolated": True,
@@ -106,7 +126,8 @@ async def get_status():
         "active_model": active_m,
         "model_online": llm_engine.is_available(),
         "repo": str(engine.repo_dir.name),
-        "gh_authenticated": bool(get_github_token())
+        "gh_authenticated": bool(get_github_token()),
+        "byok_providers": ["nvidia_nim", "deepseek", "anthropic_claude", "openai"]
     }
 
 
@@ -129,7 +150,7 @@ async def get_issue_detail(issue_id: str):
 
 
 @app.post("/api/ingest")
-async def ingest_repository(req: IngestRepoRequest, background_tasks: BackgroundTasks):
+async def ingest_repository(req: IngestRepoRequest, request: Request, background_tasks: BackgroundTasks):
     """
     Ingests ANY live GitHub repository:
     1. Shallow clones the codebase into local_repos/
@@ -138,6 +159,14 @@ async def ingest_repository(req: IngestRepoRequest, background_tasks: Background
     4. Streams real-time thinking to the Brutalist UI via SSE
     """
     repo_input = req.repo_url.strip()
+
+    # Capture in-memory BYOK keys from HTTPS headers if supplied
+    nv_key = request.headers.get("x-nvidia-key")
+    ds_key = request.headers.get("x-deepseek-key")
+    cl_key = request.headers.get("x-anthropic-key")
+    oa_key = request.headers.get("x-openai-key")
+    if nv_key or ds_key or cl_key or oa_key:
+        llm_engine.set_keys(nvidia_key=nv_key, deepseek_key=ds_key, claude_key=cl_key, openai_key=oa_key)
 
     # Special handling for preloaded demo repo
     if "url-toolkit" in repo_input or "target_repo" in repo_input:
