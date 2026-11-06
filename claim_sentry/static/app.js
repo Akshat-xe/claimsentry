@@ -825,8 +825,15 @@ function bootstrapDashboard() {
   checkAuthState();
   initSSE();
   fetchStatus();
-  fetchIssues();
+  // Keep allIssues empty on initial boot so default tab shows "AWAITING REPOSITORY INPUT"
+  allIssues = [];
+  renderClaims();
   fetchRegisteredVisitors();
+
+  // Subtle non-confidential live telemetry heartbeat (every 25 seconds)
+  setInterval(() => {
+    appendLog("HEARTBEAT", "Laboratory listener online • 0.00 MBPS sandbox active");
+  }, 25000);
 }
 
 if (document.readyState === "loading") {
@@ -1166,9 +1173,31 @@ function setupEventListeners() {
   const btnClosePopover = document.getElementById("btn-close-popover");
   const btnPopupSignOut = document.getElementById("btn-popup-sign-out");
 
+  // 20-Model Cascade Modal Toggle
+  const btnCascadeToggle = document.getElementById("btn-cascade-toggle");
+  const cascadeModal = document.getElementById("cascade-models-modal");
+  const btnCloseCascadeModal = document.getElementById("btn-close-cascade-modal");
+
+  if (btnCascadeToggle && cascadeModal) {
+    btnCascadeToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (accountPopover) accountPopover.style.display = "none";
+      const isVisible = cascadeModal.style.display === "flex";
+      cascadeModal.style.display = isVisible ? "none" : "flex";
+    });
+  }
+
+  if (btnCloseCascadeModal && cascadeModal) {
+    btnCloseCascadeModal.addEventListener("click", (e) => {
+      e.stopPropagation();
+      cascadeModal.style.display = "none";
+    });
+  }
+
   if (btnAccountToggle && accountPopover) {
     btnAccountToggle.addEventListener("click", (e) => {
       e.stopPropagation();
+      if (cascadeModal) cascadeModal.style.display = "none";
       const isVisible = accountPopover.style.display === "block";
       accountPopover.style.display = isVisible ? "none" : "block";
     });
@@ -1199,11 +1228,16 @@ function setupEventListeners() {
     });
   }
 
-  // Dismiss Popover on outside click
+  // Dismiss Popovers on outside click
   document.addEventListener("click", (e) => {
     if (accountPopover && accountPopover.style.display === "block") {
       if (!accountPopover.contains(e.target) && e.target !== btnAccountToggle && !btnAccountToggle?.contains(e.target)) {
         accountPopover.style.display = "none";
+      }
+    }
+    if (cascadeModal && cascadeModal.style.display === "flex") {
+      if (!cascadeModal.contains(e.target) && e.target !== btnCascadeToggle && !btnCascadeToggle?.contains(e.target)) {
+        cascadeModal.style.display = "none";
       }
     }
   });

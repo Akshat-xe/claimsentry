@@ -84,6 +84,14 @@
       </div>
 
       <div class="top-navbar-right">
+        <!-- 20-MODEL CASCADE BUTTON (OPENS MODAL WITH ALL 20 FALLBACK MODELS) -->
+        <button class="cascade-btn-trigger" id="btn-cascade-toggle" title="View 20-Model Fallback Cascade">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>20 MODELS</span>
+        </button>
+
         <!-- ACCOUNT BUTTON (OPENS POPUP WITH USER PROFILE & SIGN OUT) -->
         <button class="account-btn-trigger" id="btn-account-toggle" title="Account Profile &amp; Sign Out" aria-label="Account details">
           <div class="account-avatar" id="user-avatar-monogram">AG</div>
@@ -164,7 +172,6 @@
             <div class="progress-info-block">
               <div class="progress-headline-row">
                 <h3 class="progress-status-title" id="metric-status-title">Laboratory Ready</h3>
-                <span class="latency-indicator">Sub-Second Latency ↗</span>
               </div>
               <p class="progress-status-desc" id="metric-status-sub">
                 Paste any GitHub repository URL or select a Quick Preset to launch autonomous laboratory analysis.
@@ -290,6 +297,203 @@
           </svg>
           <span>SIGN OUT</span>
         </button>
+      </div>
+    </div>
+
+    <!-- 20-MODEL CASCADE MODAL (OPENS WHEN 20 MODELS BUTTON CLICKED) -->
+    <div id="cascade-models-modal" class="cascade-models-modal" style="display: none;">
+      <div class="cascade-modal-header">
+        <div class="cascade-modal-title-group">
+          <span class="badge-airgap-pill" style="margin-bottom: 4px; display: inline-block;">ZERO RATE-LIMIT GUARANTEE</span>
+          <h3 style="font-size: 15px; font-weight: 800; color: #fff; margin: 0;">20-Model Fallback Cascade</h3>
+          <p style="font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 3px; line-height: 1.4;">
+            Active multi-tier cascade across NVIDIA NIM, DeepSeek, Claude, OpenAI, and local AST Invariant engines.
+          </p>
+        </div>
+        <button class="popover-close-btn" id="btn-close-cascade-modal" title="Close">✕</button>
+      </div>
+
+      <div class="cascade-models-scroll" id="cascade-models-container">
+        <!-- 20 Models listed in order of priority -->
+        <div class="cascade-model-row">
+          <span class="model-rank-num">01</span>
+          <div class="model-meta">
+            <span class="model-id-name">nvidia/llama-3.1-nemotron-70b-instruct</span>
+            <span class="model-role-desc">Primary Coding &amp; Reasoning Engine</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">02</span>
+          <div class="model-meta">
+            <span class="model-id-name">mistralai/codestral-22b-instruct-v0.1</span>
+            <span class="model-role-desc">Specialized Code Completion &amp; Refactoring</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">03</span>
+          <div class="model-meta">
+            <span class="model-id-name">mistralai/mistral-large-2-instruct</span>
+            <span class="model-role-desc">High-Context Architectural Reasoning (128k)</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">04</span>
+          <div class="model-meta">
+            <span class="model-id-name">meta/llama-3.3-70b-instruct</span>
+            <span class="model-role-desc">General Static Analysis &amp; Math Proofs</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">05</span>
+          <div class="model-meta">
+            <span class="model-id-name">meta/llama-3.2-90b-vision-instruct</span>
+            <span class="model-role-desc">Multimodal Screenshot &amp; UI Defect Inspection</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">06</span>
+          <div class="model-meta">
+            <span class="model-id-name">deepseek-ai/deepseek-coder-6.7b-instruct</span>
+            <span class="model-role-desc">Fast Syntax &amp; Import Resolution</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">07</span>
+          <div class="model-meta">
+            <span class="model-id-name">qwen/qwen2.5-coder-32b-instruct</span>
+            <span class="model-role-desc">Polyglot AST Graph &amp; Symbol Engine</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">08</span>
+          <div class="model-meta">
+            <span class="model-id-name">deepseek-ai/deepseek-r1</span>
+            <span class="model-role-desc">Chain-of-Thought Formal Verification</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">09</span>
+          <div class="model-meta">
+            <span class="model-id-name">deepseek-ai/deepseek-v3</span>
+            <span class="model-role-desc">Multi-Turn Adversarial Triage</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">10</span>
+          <div class="model-meta">
+            <span class="model-id-name">meta/codellama-70b</span>
+            <span class="model-role-desc">Legacy Codebase &amp; C/C++ Invariants</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">11</span>
+          <div class="model-meta">
+            <span class="model-id-name">mistralai/mixtral-8x22b-v0.1</span>
+            <span class="model-role-desc">Sparse MoE Multi-Agent Triage</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">12</span>
+          <div class="model-meta">
+            <span class="model-id-name">google/codegemma-7b</span>
+            <span class="model-role-desc">Swift &amp; Rust Low-Level Verification</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">13</span>
+          <div class="model-meta">
+            <span class="model-id-name">ibm/granite-34b-code-instruct</span>
+            <span class="model-role-desc">Enterprise Defect &amp; Dependency Audit</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">14</span>
+          <div class="model-meta">
+            <span class="model-id-name">microsoft/phi-3.5-moe-instruct</span>
+            <span class="model-role-desc">Ultra-Low Latency Spec Checker</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">15</span>
+          <div class="model-meta">
+            <span class="model-id-name">01-ai/yi-large</span>
+            <span class="model-role-desc">Cross-Lingual Ticket Synthesis</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">16</span>
+          <div class="model-meta">
+            <span class="model-id-name">writer/palmyra-creative-122b</span>
+            <span class="model-role-desc">Adversarial Exploit Reproduction</span>
+          </div>
+          <span class="model-provider-badge badge-nvidia">NVIDIA NIM</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">17</span>
+          <div class="model-meta">
+            <span class="model-id-name">deepseek-chat</span>
+            <span class="model-role-desc">DeepSeek Direct Cloud API Fallback</span>
+          </div>
+          <span class="model-provider-badge badge-deepseek">DEEPSEEK</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">18</span>
+          <div class="model-meta">
+            <span class="model-id-name">claude-3-5-sonnet-20241022</span>
+            <span class="model-role-desc">Anthropic Claude BYOK Fallback</span>
+          </div>
+          <span class="model-provider-badge badge-anthropic">ANTHROPIC</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">19</span>
+          <div class="model-meta">
+            <span class="model-id-name">claude-3-5-haiku-20241022</span>
+            <span class="model-role-desc">Anthropic Claude Fast BYOK Fallback</span>
+          </div>
+          <span class="model-provider-badge badge-anthropic">ANTHROPIC</span>
+        </div>
+
+        <div class="cascade-model-row">
+          <span class="model-rank-num">20</span>
+          <div class="model-meta">
+            <span class="model-id-name">gpt-4o-mini</span>
+            <span class="model-role-desc">OpenAI Direct Cloud API Fallback</span>
+          </div>
+          <span class="model-provider-badge badge-openai">OPENAI</span>
+        </div>
       </div>
     </div>
 
