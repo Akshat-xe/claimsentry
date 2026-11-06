@@ -50,6 +50,10 @@ try {
         if (user.photoURL) {
           sessionStorage.setItem("cs_auth_photo", user.photoURL);
         }
+        const providerId = (user.providerData && user.providerData[0]) ? user.providerData[0].providerId : "google.com";
+        sessionStorage.setItem("cs_auth_provider", providerId === "google.com" ? "Google OAuth 2.0" : providerId);
+        sessionStorage.setItem("cs_auth_last_login", user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : new Date().toLocaleString());
+
         await syncUserProfile(user.uid, user.email, name, user.photoURL);
         checkAuthState();
       } else {
@@ -57,6 +61,8 @@ try {
         sessionStorage.removeItem("cs_auth_email");
         sessionStorage.removeItem("cs_auth_uid");
         sessionStorage.removeItem("cs_auth_photo");
+        sessionStorage.removeItem("cs_auth_provider");
+        sessionStorage.removeItem("cs_auth_last_login");
         checkAuthState();
       }
     });
@@ -71,6 +77,10 @@ try {
         if (user.photoURL) {
           sessionStorage.setItem("cs_auth_photo", user.photoURL);
         }
+        const providerId = (user.providerData && user.providerData[0]) ? user.providerData[0].providerId : "google.com";
+        sessionStorage.setItem("cs_auth_provider", providerId === "google.com" ? "Google OAuth 2.0" : providerId);
+        sessionStorage.setItem("cs_auth_last_login", user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : new Date().toLocaleString());
+
         await syncUserProfile(user.uid, user.email, name, user.photoURL);
         checkAuthState();
         fetchIssues();
@@ -812,12 +822,11 @@ function triggerBootSequence(onComplete) {
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
-  initGooeyNav();
   checkAuthState();
-  loadStoredByokKeys();
   initSSE();
   fetchStatus();
   fetchIssues();
+  fetchRegisteredVisitors();
 });
 
 // INITIALIZE REACT BITS GOOEYNAV
@@ -883,7 +892,7 @@ function clearAuthError() {
   }
 }
 
-// AUTH GATE
+// AUTH GATE & DASHBOARD CONTROLLER
 function checkAuthState() {
   const isAuth = sessionStorage.getItem("cs_auth_user");
   const authGate = document.getElementById("view-auth-gate");
@@ -891,16 +900,13 @@ function checkAuthState() {
 
   if (isAuth) {
     if (authGate) authGate.style.display = "none";
-    if (appMain) appMain.style.display = "block";
+    if (appMain) appMain.style.display = "flex";
     
     // Dynamic greeting based on first name
     const parts = isAuth.trim().split(/\s+/);
     const firstName = parts[0] || "Agent";
     const greetingEl = document.getElementById("greeting-title");
     if (greetingEl) greetingEl.innerText = `Good morning, ${firstName}`;
-
-    const displayNameEl = document.getElementById("user-display-name");
-    if (displayNameEl) displayNameEl.innerText = isAuth;
 
     let initials = "AG";
     if (parts.length >= 2) {
@@ -909,8 +915,8 @@ function checkAuthState() {
       initials = parts[0].slice(0, 2).toUpperCase();
     }
 
-    const avatarEl = document.getElementById("user-avatar-monogram");
     const photoUrl = sessionStorage.getItem("cs_auth_photo");
+    const avatarEl = document.getElementById("user-avatar-monogram");
     if (avatarEl) {
       if (photoUrl) {
         avatarEl.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(isAuth)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.parentElement.innerText='${initials}'">`;
@@ -918,6 +924,37 @@ function checkAuthState() {
         avatarEl.innerText = initials;
       }
     }
+
+    // Populate Account Popover View with captured details
+    const popoverAvatar = document.getElementById("popover-avatar");
+    if (popoverAvatar) {
+      if (photoUrl) {
+        popoverAvatar.innerHTML = `<img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(isAuth)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.parentElement.innerText='${initials}'">`;
+      } else {
+        popoverAvatar.innerText = initials;
+      }
+    }
+
+    const popoverName = document.getElementById("popover-name");
+    if (popoverName) popoverName.innerText = isAuth;
+
+    const email = sessionStorage.getItem("cs_auth_email") || "user@example.com";
+    const popoverEmail = document.getElementById("popover-email");
+    if (popoverEmail) popoverEmail.innerText = email;
+
+    const uid = sessionStorage.getItem("cs_auth_uid") || "---";
+    const popoverUid = document.getElementById("popover-uid");
+    if (popoverUid) popoverUid.innerText = uid;
+
+    const provider = sessionStorage.getItem("cs_auth_provider") || "Google OAuth 2.0";
+    const popoverProvider = document.getElementById("popover-provider");
+    if (popoverProvider) popoverProvider.innerText = provider;
+
+    const lastLogin = sessionStorage.getItem("cs_auth_last_login") || "Active Session";
+    const popoverLastLogin = document.getElementById("popover-last-login");
+    if (popoverLastLogin) popoverLastLogin.innerText = lastLogin;
+
+    fetchRegisteredVisitors();
   } else {
     if (authGate) authGate.style.display = "flex";
     if (appMain) appMain.style.display = "none";
@@ -973,6 +1010,9 @@ async function handleLogin() {
       if (user.photoURL) {
         sessionStorage.setItem("cs_auth_photo", user.photoURL);
       }
+      const providerId = (user.providerData && user.providerData[0]) ? user.providerData[0].providerId : "google.com";
+      sessionStorage.setItem("cs_auth_provider", providerId === "google.com" ? "Google OAuth 2.0" : providerId);
+      sessionStorage.setItem("cs_auth_last_login", user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : new Date().toLocaleString());
 
       // Record visitor in Supabase database for owner auditing
       await syncUserProfile(user.uid, user.email, userName, user.photoURL);
@@ -1008,6 +1048,10 @@ async function handleSignOut() {
   sessionStorage.removeItem("cs_auth_email");
   sessionStorage.removeItem("cs_auth_uid");
   sessionStorage.removeItem("cs_auth_photo");
+  sessionStorage.removeItem("cs_auth_provider");
+  sessionStorage.removeItem("cs_auth_last_login");
+  const popover = document.getElementById("account-popover");
+  if (popover) popover.style.display = "none";
   clearAuthError();
   checkAuthState();
 }
@@ -1036,7 +1080,7 @@ async function syncUserProfile(uid, email, displayName, avatarUrl) {
 async function fetchRegisteredVisitors() {
   const container = document.getElementById("visitor-monitor-list");
   const badge = document.getElementById("visitor-count-badge");
-  if (!container || !supabaseClient) return;
+  if (!supabaseClient) return;
 
   try {
     const { data, error } = await supabaseClient
@@ -1046,85 +1090,116 @@ async function fetchRegisteredVisitors() {
 
     if (error) throw error;
 
-    if (!data || data.length === 0) {
-      container.innerHTML = `<div class="terminal-log-row" style="color: rgba(255,255,255,0.4);">No visitor profiles recorded in Supabase yet.</div>`;
-      if (badge) badge.innerText = "0 AUDITED";
-      return;
+    if (badge) {
+      const count = data && data.length ? data.length : 1;
+      badge.innerText = `${count} Active`;
     }
 
-    if (badge) badge.innerText = `${data.length} AUDITED`;
+    if (container) {
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="terminal-log-row" style="color: rgba(255,255,255,0.4);">No visitor profiles recorded in Supabase yet.</div>`;
+        return;
+      }
 
-    container.innerHTML = data.map((v) => {
-      const timeStr = v.updated_at ? new Date(v.updated_at).toLocaleString() : "Recently";
-      const name = v.display_name || "Anonymous Agent";
-      const email = v.email || "No email";
-      return `
-        <div class="terminal-log-row" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 6px 0;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="log-tag-radiant" style="font-size: 9px; padding: 2px 6px;">${v.id ? v.id.slice(0, 6) : "AUTH"}...</span>
-            <span style="font-weight: 700; color: #fff;">${escapeHtml(name)}</span>
-            <span style="color: var(--text-secondary); font-size: 11px;">(${escapeHtml(email)})</span>
+      container.innerHTML = data.map((v) => {
+        const timeStr = v.updated_at ? new Date(v.updated_at).toLocaleString() : "Recently";
+        const name = v.display_name || "Anonymous Agent";
+        const email = v.email || "No email";
+        return `
+          <div class="terminal-log-row" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 6px 0;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="log-tag-radiant" style="font-size: 9px; padding: 2px 6px;">${v.id ? v.id.slice(0, 6) : "AUTH"}...</span>
+              <span style="font-weight: 700; color: #fff;">${escapeHtml(name)}</span>
+              <span style="color: var(--text-secondary); font-size: 11px;">(${escapeHtml(email)})</span>
+            </div>
+            <span style="color: rgba(255,255,255,0.4); font-size: 10px;">${timeStr}</span>
           </div>
-          <span style="color: rgba(255,255,255,0.4); font-size: 10px;">${timeStr}</span>
-        </div>
-      `;
-    }).join("");
+        `;
+      }).join("");
+    }
   } catch (err) {
-    console.warn("fetchRegisteredVisitors error:", err);
-    container.innerHTML = `<div class="terminal-log-row" style="color: #FF3B30;">Failed to load visitor audit: ${escapeHtml(err.message)}</div>`;
+    console.warn("fetchRegisteredVisitors notice:", err);
   }
 }
 
-// MULTI-PAGE NAVIGATION (HOME / LOGS / BYOK)
-function switchPage(page, syncNav = true) {
+// MULTI-PAGE NAVIGATION (FALLBACK COMPATIBILITY)
+function switchPage(page) {
   currentPage = page;
-  const home = document.getElementById("page-home");
-  const terminal = document.getElementById("page-terminal");
-  const byok = document.getElementById("page-byok");
-
-  if (!home || !terminal || !byok) return;
-
-  home.style.display = page === "home" ? "block" : "none";
-  terminal.style.display = page === "terminal" ? "block" : "none";
-  byok.style.display = page === "byok" ? "block" : "none";
-
-  if (page === "terminal") {
-    fetchRegisteredVisitors();
-  }
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-
-  if (syncNav && globalGooeyNav) {
-    const pageIndexMap = { home: 0, terminal: 1, byok: 2 };
-    if (pageIndexMap[page] !== undefined) {
-      globalGooeyNav.setActive(pageIndexMap[page]);
-    }
-  }
 }
 
 // EVENT LISTENERS
 function setupEventListeners() {
-  document.getElementById("btn-login-google").addEventListener("click", handleLogin);
-  document.getElementById("btn-sign-out").addEventListener("click", handleSignOut);
+  const btnLoginGoogle = document.getElementById("btn-login-google");
+  if (btnLoginGoogle) btnLoginGoogle.addEventListener("click", handleLogin);
 
   const btnHeroStart = document.getElementById("btn-hero-start");
   const inputRepo = document.getElementById("input-repo-url");
-  btnHeroStart.addEventListener("click", () => startTriage(inputRepo.value));
-  inputRepo.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") startTriage(inputRepo.value);
+  if (btnHeroStart && inputRepo) {
+    btnHeroStart.addEventListener("click", () => startTriage(inputRepo.value));
+    inputRepo.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") startTriage(inputRepo.value);
+    });
+  }
+
+  // Account Popover Toggle & Sign Out
+  const btnAccountToggle = document.getElementById("btn-account-toggle");
+  const accountPopover = document.getElementById("account-popover");
+  const btnClosePopover = document.getElementById("btn-close-popover");
+  const btnPopupSignOut = document.getElementById("btn-popup-sign-out");
+
+  if (btnAccountToggle && accountPopover) {
+    btnAccountToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isVisible = accountPopover.style.display === "block";
+      accountPopover.style.display = isVisible ? "none" : "block";
+    });
+  }
+
+  if (btnClosePopover && accountPopover) {
+    btnClosePopover.addEventListener("click", (e) => {
+      e.stopPropagation();
+      accountPopover.style.display = "none";
+    });
+  }
+
+  if (btnPopupSignOut) {
+    btnPopupSignOut.addEventListener("click", () => {
+      if (accountPopover) accountPopover.style.display = "none";
+      handleSignOut();
+    });
+  }
+
+  // Clear Terminal Button
+  const btnClearLogs = document.getElementById("btn-clear-logs");
+  if (btnClearLogs) {
+    btnClearLogs.addEventListener("click", () => {
+      const ticker = document.getElementById("ticker-lines-container");
+      if (ticker) {
+        ticker.innerHTML = `<div class="ticker-line"><span class="ticker-ts">[CLEARED]</span> <span>Terminal history cleared. Laboratory listener active.</span></div>`;
+      }
+    });
+  }
+
+  // Dismiss Popover on outside click
+  document.addEventListener("click", (e) => {
+    if (accountPopover && accountPopover.style.display === "block") {
+      if (!accountPopover.contains(e.target) && e.target !== btnAccountToggle && !btnAccountToggle?.contains(e.target)) {
+        accountPopover.style.display = "none";
+      }
+    }
   });
 
-  document.getElementById("proof-modal").addEventListener("click", (e) => {
-    if (e.target.id === "proof-modal") closeProofModal();
-  });
+  const proofModal = document.getElementById("proof-modal");
+  if (proofModal) {
+    proofModal.addEventListener("click", (e) => {
+      if (e.target.id === "proof-modal") closeProofModal();
+    });
+  }
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeProofModal();
-      const terminalModal = document.getElementById("terminal-modal");
-      if (terminalModal && terminalModal.classList.contains("open")) {
-        terminalModal.classList.remove("open");
-      }
+      if (accountPopover) accountPopover.style.display = "none";
     }
   });
 }
@@ -1154,22 +1229,9 @@ function appendLog(phase, message) {
     row.innerHTML = `<span class="ticker-ts">[${phase}]</span> <span>${escapeHTML(message)}</span>`;
     ticker.appendChild(row);
     ticker.scrollTop = ticker.scrollHeight;
-    while (ticker.children.length > 40) {
+    while (ticker.children.length > 250) {
       ticker.removeChild(ticker.children[0]);
     }
-  }
-
-  const terminal = document.getElementById("terminal-stream-logs");
-  if (terminal) {
-    const row = document.createElement("div");
-    row.className = "terminal-log-row";
-    row.innerHTML = `
-      <span style="color: rgba(255,255,255,0.4);">[${ts}]</span>
-      <span class="log-tag-radiant">[${phase}]</span>
-      <span>${escapeHTML(message)}</span>
-    `;
-    terminal.appendChild(row);
-    terminal.scrollTop = terminal.scrollHeight;
   }
 }
 
@@ -1214,19 +1276,9 @@ async function startTriage(repoUrl) {
 
   let localBackendSuccess = false;
   try {
-    const headers = { "Content-Type": "application/json" };
-    const nv = sessionStorage.getItem("cs_byok_nvidia");
-    const ds = sessionStorage.getItem("cs_byok_deepseek");
-    const cl = sessionStorage.getItem("cs_byok_claude");
-    const oa = sessionStorage.getItem("cs_byok_openai");
-    if (nv) headers["X-Nvidia-Key"] = nv;
-    if (ds) headers["X-DeepSeek-Key"] = ds;
-    if (cl) headers["X-Anthropic-Key"] = cl;
-    if (oa) headers["X-OpenAI-Key"] = oa;
-
     const res = await fetch("/api/ingest", {
       method: "POST",
-      headers: headers,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ repo_url: targetUrl })
     });
 
@@ -1863,91 +1915,6 @@ function openProofModal(issueId) {
 
 function closeProofModal() {
   document.getElementById("proof-modal").classList.remove("open");
-}
-
-// BYOK VAULT PAGE FUNCTIONS
-function loadStoredByokKeys() {
-  const nv = sessionStorage.getItem("cs_byok_nvidia") || "";
-  const ds = sessionStorage.getItem("cs_byok_deepseek") || "";
-  const cl = sessionStorage.getItem("cs_byok_claude") || "";
-  const oa = sessionStorage.getItem("cs_byok_openai") || "";
-
-  const inpNv = document.getElementById("input-nvidia-key");
-  const inpDs = document.getElementById("input-deepseek-key");
-  const inpCl = document.getElementById("input-claude-key");
-  const inpOa = document.getElementById("input-openai-key");
-
-  if (inpNv) inpNv.value = nv;
-  if (inpDs) inpDs.value = ds;
-  if (inpCl) inpCl.value = cl;
-  if (inpOa) inpOa.value = oa;
-
-  if (nv || ds || cl || oa) {
-    syncKeysToBackend(nv, ds, cl, oa);
-  }
-}
-
-async function saveByokVault() {
-  const nv = (document.getElementById("input-nvidia-key")?.value || "").trim();
-  const ds = (document.getElementById("input-deepseek-key")?.value || "").trim();
-  const cl = (document.getElementById("input-claude-key")?.value || "").trim();
-  const oa = (document.getElementById("input-openai-key")?.value || "").trim();
-
-  sessionStorage.setItem("cs_byok_nvidia", nv);
-  sessionStorage.setItem("cs_byok_deepseek", ds);
-  sessionStorage.setItem("cs_byok_claude", cl);
-  sessionStorage.setItem("cs_byok_openai", oa);
-
-  await syncKeysToBackend(nv, ds, cl, oa);
-
-  const fb = document.getElementById("byok-save-feedback");
-  if (fb) {
-    fb.style.display = "block";
-    setTimeout(() => { fb.style.display = "none"; }, 3500);
-  }
-
-  fetchStatus();
-}
-
-function clearByokVault() {
-  sessionStorage.removeItem("cs_byok_nvidia");
-  sessionStorage.removeItem("cs_byok_deepseek");
-  sessionStorage.removeItem("cs_byok_claude");
-  sessionStorage.removeItem("cs_byok_openai");
-
-  if (document.getElementById("input-nvidia-key")) document.getElementById("input-nvidia-key").value = "";
-  if (document.getElementById("input-deepseek-key")) document.getElementById("input-deepseek-key").value = "";
-  if (document.getElementById("input-claude-key")) document.getElementById("input-claude-key").value = "";
-  if (document.getElementById("input-openai-key")) document.getElementById("input-openai-key").value = "";
-
-  syncKeysToBackend("", "", "", "");
-
-  const fb = document.getElementById("byok-save-feedback");
-  if (fb) {
-    fb.style.display = "block";
-    fb.innerText = "✓ All API keys wiped from local session memory.";
-    setTimeout(() => {
-      fb.style.display = "none";
-      fb.innerText = "✓ Keys stored in client sessionStorage. Zero server retention.";
-    }, 3500);
-  }
-
-  fetchStatus();
-}
-
-async function syncKeysToBackend(nv, ds, cl, oa) {
-  try {
-    await fetch("/api/byok/keys", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nvidia_api_key: nv || null,
-        deepseek_api_key: ds || null,
-        anthropic_api_key: cl || null,
-        openai_api_key: oa || null,
-      })
-    });
-  } catch (e) {}
 }
 
 // SSE LIVE TERMINAL STREAM (FROM LOCAL BACKEND)

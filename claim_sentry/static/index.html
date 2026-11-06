@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -31,7 +31,7 @@
         </div>
         <div class="bootloader-line" id="boot-line-3">
           <span class="boot-badge-check">✓</span>
-          <span class="boot-text">5-Model Fallback Cascade Active <span class="boot-highlight">(Nemotron + Codestral + Mistral)</span>...</span>
+          <span class="boot-text">20-Model Fallback Cascade Active <span class="boot-highlight">(Nemotron + Codestral + Mistral)</span>...</span>
         </div>
         <div class="bootloader-line" id="boot-line-4">
           <span class="boot-badge-check">✓</span>
@@ -66,110 +66,72 @@
 
       <div style="margin-top: 24px; font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.5;">
         🔒 Multi-tenant authentication secured by Supabase (Hactoberfest Org).<br>
-        Zero API keys are stored in the database.
+        Zero API keys are stored in the database. Air-Gapped: 0.00 MBPS.
       </div>
     </div>
   </section>
 
   <!-- ========================================================
-       STATE 2: AUTHENTICATED MULTI-PAGE APPLICATION
+       STATE 2: SINGLE-VIEWPORT DASHBOARD (NO OUTER SCROLLING)
        ======================================================== -->
-  <div id="view-app-main" style="display: none;">
+  <div id="view-app-main" class="viewport-dashboard" style="display: none;">
 
-    <!-- TOP FLOATING STADIUM CAPSULE -->
-    <header class="top-capsule-bar">
-      <div class="top-capsule-inner">
-        <div class="user-identity-group">
-          <div class="user-monogram" id="user-avatar-monogram">AG</div>
-          <span class="user-name-label" id="user-display-name">Agent</span>
-        </div>
+    <!-- TOP NAVBAR: GREETING ON LEFT, ACCOUNT BUTTON ON RIGHT -->
+    <header class="top-navbar">
+      <div class="top-navbar-left">
+        <h1 class="greeting-heading" id="greeting-title">Good morning, Agent</h1>
+        <p class="greeting-subheading">Autonomous Air-Gapped Triage Laboratory • 20-Model Fallback Cascade Active</p>
+      </div>
 
-        <div class="top-bar-controls">
-          <!-- ISOLATED SYNC PILL (STRICT EXCLUSIVE GREEN STRICTLY FOR SYNC) -->
-          <div class="sync-pill-indicator" id="sync-pill" title="NVIDIA 20-Model Cascade Online">
-            <span class="sync-dot-green"></span>
-            <span>Sync</span>
-          </div>
-
-          <!-- BYOK VAULT PILL (NAVIGATES TO BYOK PAGE) -->
-          <button class="btn-capsule-action" id="btn-top-byok" onclick="switchPage('byok')">
-            <span>🔑 BYOK Vault</span>
-          </button>
-
-          <!-- SIGN OUT -->
-          <button class="btn-auth-pill" id="btn-sign-out">
-            <span>Sign Out</span>
-          </button>
-        </div>
+      <div class="top-navbar-right">
+        <!-- ACCOUNT BUTTON (OPENS POPUP WITH CAPTURED ID DETAILS & SIGN OUT) -->
+        <button class="account-btn-trigger" id="btn-account-toggle" title="Account Details &amp; Sign Out" aria-label="Account details">
+          <div class="account-avatar" id="user-avatar-monogram">AG</div>
+          <span class="account-badge-online" title="Session Active"></span>
+        </button>
       </div>
     </header>
 
-    <!-- MAIN APP CONTAINER (OPEN CANVAS ARCHITECTURE) -->
-    <main class="app-container">
-
-      <!-- PAGE 1: HOME (TRIAGE LABORATORY) -->
-      <section id="page-home">
-        <h1 class="open-header-title" id="greeting-title">Good morning, Agent</h1>
-        <p class="open-header-subtitle">Autonomous Air-Gapped Triage Laboratory • 20-Model Fallback Cascade Active</p>
-
-        <!-- HERO FOCUS CARD ("LIVE RIGHT NOW") -->
-        <div class="hero-focus-card">
-          <div class="hero-pill-row">
-            <div class="live-badge">
-              <span class="live-dot"></span>
-              <span>Live Triage</span>
-            </div>
-            <span class="cascade-pill" id="active-cascade-pill">NVIDIA 20-Model Cascade</span>
-          </div>
-
-          <h2 style="font-size: 20px; font-weight: 800; color: #fff;">Test Any GitHub Repository</h2>
-          <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px;">
-            In-memory AST indexing across Python, Rust, Swift, and TypeScript with isolated sandbox execution.
-          </p>
-
-          <div class="hero-input-group">
-            <input 
-              type="text" 
-              class="hero-repo-input" 
-              id="input-repo-url" 
-              placeholder="Paste any GitHub repository URL (e.g. https://github.com/Newton-School/react-apple-tree)..."
-            >
-            <button class="btn-radiant" id="btn-hero-start">⚡ START TRIAGE</button>
-          </div>
-
-          <!-- REACT BITS: LATTICE LOADER EMBED SLOT -->
-          <div id="lattice-loader-slot" style="margin: 14px 0 6px 0; display: none;"></div>
-
-          <div class="quick-presets-row">
-            <span style="font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 700;">Quick Presets:</span>
-            <button type="button" class="preset-chip" onclick="setPreset('https://github.com/Newton-School/react-apple-tree')">react-apple-tree</button>
-            <button type="button" class="preset-chip" onclick="setPreset('https://github.com/Newton-School/grauity')">grauity</button>
-            <button type="button" class="preset-chip" onclick="setPreset('https://github.com/pallets/flask')">flask</button>
-          </div>
-
-          <!-- REAL-TIME LABORATORY TELEMETRY TICKER -->
-          <div class="live-ticker-box" id="dashboard-log-feed">
-            <div class="ticker-header">
-              <div class="ticker-title-group">
-                <span class="ticker-dot-pulse"></span>
-                <span>REAL-TIME LABORATORY TELEMETRY</span>
-              </div>
-              <button class="btn-ticker-expand" onclick="switchPage('terminal')">Expand Full Terminal ↗</button>
-            </div>
-            <div class="ticker-lines" id="ticker-lines-container">
-              <div class="ticker-line"><span class="ticker-ts">[READY]</span> <span>Cascade online. Enter GitHub repository or select preset to commence triage.</span></div>
-            </div>
-          </div>
+    <!-- UPPER HERO INPUT ROW (COMPACT) -->
+    <section class="triage-input-bar">
+      <div class="triage-input-meta">
+        <div class="triage-title-group">
+          <h2>Test Any GitHub Repository</h2>
+          <p>In-memory AST indexing across Python, Rust, Swift, and TypeScript with isolated sandbox execution.</p>
         </div>
+        <span class="cascade-pill" id="active-cascade-pill">NVIDIA 20-Model Cascade</span>
+      </div>
 
-        <!-- PROGRESS RING & METRIC TILES (DYNAMIC - ZERO FAKE DATA) -->
-        <div class="progress-card">
-          <div class="progress-header">
-            <span class="progress-title">Triage Laboratory Progress</span>
-            <span style="font-size: 12px; color: var(--color-orange-bright); font-weight: 800;">Sub-Second Latency ↗</span>
-          </div>
+      <div class="hero-input-row">
+        <input 
+          type="text" 
+          class="hero-repo-input" 
+          id="input-repo-url" 
+          placeholder="Paste any GitHub repository URL (e.g. https://github.com/Newton-School/react-apple-tree)..."
+        >
+        <button class="btn-radiant" id="btn-hero-start">⚡ START TRIAGE</button>
+      </div>
 
-          <div class="progress-ring-row">
+      <!-- REACT BITS: LATTICE LOADER EMBED SLOT -->
+      <div id="lattice-loader-slot" style="margin: 6px 0 0 0; display: none;"></div>
+
+      <div class="presets-container">
+        <span class="presets-label">Quick Presets:</span>
+        <button type="button" class="preset-chip" onclick="setPreset('https://github.com/Newton-School/react-apple-tree')">react-apple-tree</button>
+        <button type="button" class="preset-chip" onclick="setPreset('https://github.com/Newton-School/grauity')">grauity</button>
+        <button type="button" class="preset-chip" onclick="setPreset('https://github.com/pallets/flask')">flask</button>
+      </div>
+    </section>
+
+    <!-- MAIN DASHBOARD SPLIT (LEFT: PROGRESS & CLAIMS, RIGHT: LOGS TELEMETRY) -->
+    <div class="dashboard-viewport-grid">
+
+      <!-- LEFT COLUMN: PROGRESS CARD + FILTER PILLS + CLAIMS FEED -->
+      <div class="viewport-col-left">
+
+        <!-- PROGRESS CARD (COMPACT) -->
+        <div class="progress-card-compact">
+          <div class="progress-top-row">
             <div class="svg-ring-container">
               <svg class="svg-ring" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="38" stroke="rgba(255,255,255,0.10)" stroke-width="8" fill="none" />
@@ -199,9 +161,12 @@
               </div>
             </div>
 
-            <div>
-              <h3 style="font-size: 14px; font-weight: 800; color: #fff;" id="metric-status-title">Laboratory Ready</h3>
-              <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px;" id="metric-status-sub">
+            <div class="progress-info-block">
+              <div class="progress-headline-row">
+                <h3 class="progress-status-title" id="metric-status-title">Laboratory Ready</h3>
+                <span class="latency-indicator">Sub-Second Latency ↗</span>
+              </div>
+              <p class="progress-status-desc" id="metric-status-sub">
                 Paste any GitHub repository URL or select a Quick Preset to launch autonomous laboratory analysis.
               </p>
             </div>
@@ -212,8 +177,8 @@
             <div class="health-bar-fill" id="metric-health-bar" style="width: 0%;"></div>
           </div>
 
-          <!-- STAT TILES -->
-          <div class="stat-tiles-grid">
+          <!-- STAT TILES ROW -->
+          <div class="stat-tiles-row">
             <div class="stat-tile">
               <div class="stat-value" id="stat-verified-count">0</div>
               <div class="stat-desc">Real Bugs Verified</div>
@@ -229,163 +194,113 @@
           </div>
         </div>
 
-        <!-- OPEN CANVAS FILTER PILLS -->
+        <!-- CLAIMS FILTER PILLS -->
         <div class="filter-strip">
           <button class="filter-pill active" id="pill-filter-all" onclick="applyFilter('all')">ALL CLAIMS (<span id="count-all">0</span>)</button>
           <button class="filter-pill" id="pill-filter-real" onclick="applyFilter('real')">✓ REAL CLAIMS (<span id="count-real">0</span>)</button>
           <button class="filter-pill" id="pill-filter-fake" onclick="applyFilter('fake')">✗ UNVERIFIED SLOP (<span id="count-fake">0</span>)</button>
         </div>
 
-        <!-- CLAIMS LIST -->
-        <div id="claims-container">
+        <!-- CLAIMS FEED (SCROLLS INTERNALLY) -->
+        <div id="claims-container" class="claims-scroll-container">
           <!-- Rendered dynamically -->
         </div>
-      </section>
+      </div>
 
-      <!-- PAGE 2: LIVE TERMINAL & AST AUDIT -->
-      <section id="page-terminal" style="display: none;">
-        <button class="btn-back-pill" onclick="switchPage('home')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          <span>Back to Home</span>
-        </button>
-
-        <h1 class="open-header-title">Live Terminal &amp; AST Engine</h1>
-        <p class="open-header-subtitle">Real-time SSE event stream of AST indexing and air-gapped sandbox execution.</p>
-
-        <div class="terminal-scroll-area" id="terminal-stream-logs">
-          <div class="terminal-log-row">
-            <span style="color: rgba(255,255,255,0.4);">[00:00:00]</span>
-            <span class="log-tag-radiant">[SYSTEM]</span>
-            <span>ClaimSentry engine online. 20-model fallback cascade ready. Air-gapped: 0.00 MBPS.</span>
-          </div>
-        </div>
-
-        <!-- VISITOR MONITORING AUDIT (SUPABASE SYNC) -->
-        <div style="margin-top: 32px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 14px;">👥</span>
-              <h2 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #fff; margin: 0;">Visitor Monitoring Audit</h2>
-              <span id="visitor-count-badge" style="background: rgba(255, 94, 0, 0.2); color: var(--color-orange-bright); border: 1px solid rgba(255, 94, 0, 0.4); border-radius: 9999px; padding: 2px 8px; font-size: 10px; font-weight: 800;">0 AUDITED</span>
+      <!-- RIGHT COLUMN: DEDICATED FULL-HEIGHT REAL-TIME TELEMETRY LOGS -->
+      <div class="viewport-col-right">
+        <div class="telemetry-terminal-card">
+          <div class="terminal-card-header">
+            <div class="terminal-title-group">
+              <span class="terminal-pulse-dot"></span>
+              <span class="terminal-title-text">REAL-TIME LABORATORY TELEMETRY</span>
+              <span class="badge-airgap-pill">0.00 MBPS AIR-GAPPED</span>
             </div>
-            <button class="preset-chip" onclick="fetchRegisteredVisitors()" style="padding: 4px 10px; font-size: 11px; cursor: pointer;">
-              ↻ Refresh Audit
-            </button>
+            <div class="terminal-actions">
+              <button class="btn-terminal-action" id="btn-clear-logs" title="Clear terminal logs">CLEAR</button>
+            </div>
           </div>
-          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-            Real-time audit log of all visitors authenticated via Google OAuth, persisted in Supabase <code style="color: var(--color-orange-bright);">public.profiles</code>.
-          </p>
-          <div class="terminal-scroll-area" id="visitor-monitor-list" style="height: 180px;">
-            <div class="terminal-log-row" style="color: rgba(255,255,255,0.4);">
-              Loading authenticated visitors from Supabase...
+
+          <!-- LOG STREAM FEED (SCROLLS TO BOTTOM ON NEW LOGS) -->
+          <div class="terminal-scroll-feed" id="ticker-lines-container">
+            <div class="ticker-line"><span class="ticker-ts">[READY]</span> <span>Cascade online. Enter GitHub repository or select preset to commence triage.</span></div>
+          </div>
+
+          <!-- TERMINAL FOOTER: CASCADE AND VISITOR AUDIT STATUS -->
+          <div class="terminal-card-footer">
+            <div class="footer-status-item">
+              <span class="footer-label">CASCADE:</span>
+              <span class="footer-val">NVIDIA NIM 70B &amp; AST Fallback</span>
+            </div>
+            <div class="footer-status-item">
+              <span class="footer-label">VISITOR AUDIT:</span>
+              <span class="footer-val text-neon-orange" id="visitor-count-badge">1 Active</span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- PAGE 3: DEDICATED BYOK KEY VAULT (ZERO SERVER STORAGE) -->
-      <section id="page-byok" style="display: none;">
-        <button class="btn-back-pill" onclick="switchPage('home')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          <span>Back to Home</span>
-        </button>
-
-        <h1 class="open-header-title">🔑 BYOK Key Vault &amp; Compute Settings</h1>
-        <p class="open-header-subtitle">Bring Your Own Key — Zero Server Storage Guarantee. Keys live strictly in your client-side browser sessionStorage.</p>
-
-        <!-- SECURITY NOTICE BANNER -->
-        <div class="byok-page-card" style="margin-top: 20px;">
-          <div style="background: rgba(255,94,0,0.12); border: 1.5px solid rgba(255,160,64,0.3); border-radius: 14px; padding: 16px; margin-bottom: 24px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.9);">
-            🔒 <b>Zero Server Storage Guarantee:</b> Your API keys are stored only in your browser's local <code>sessionStorage</code>. They are transmitted solely as ephemeral in-memory HTTPS request headers during verification and are never written to Supabase, Firebase, server logs, or disk.
-          </div>
-
-          <!-- KEY INPUTS GRID -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-            <!-- 1. NVIDIA NIM -->
-            <div class="byok-input-tile">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 800; color: #fff;">1. NVIDIA NIM (20-Model Cascade)</span>
-                <a href="https://build.nvidia.com/explore/discover" target="_blank" style="font-size: 11px; color: var(--color-orange-bright); text-decoration: underline;">Get Key at build.nvidia.com ↗</a>
-              </div>
-              <input type="password" id="input-nvidia-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="nvapi-********************************">
-              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">Powers Meta Llama 3.3 70B, Nemotron 70B, Codestral 22B, and Mistral Large.</span>
-            </div>
-
-            <!-- 2. DEEPSEEK -->
-            <div class="byok-input-tile">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 800; color: #fff;">2. DeepSeek API Key</span>
-                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">V3 &amp; R1 Reasoning</span>
-              </div>
-              <input type="password" id="input-deepseek-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="sk-********************************">
-              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">High-density adversarial logic verification and root-cause synthesis.</span>
-            </div>
-
-            <!-- 3. ANTHROPIC CLAUDE -->
-            <div class="byok-input-tile">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 800; color: #fff;">3. Anthropic Claude API Key</span>
-                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">Claude 3.5 Sonnet</span>
-              </div>
-              <input type="password" id="input-claude-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="sk-ant-********************************">
-              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">Code synthesis, diff coverage analysis, and AST patch audit.</span>
-            </div>
-
-            <!-- 4. OPENAI -->
-            <div class="byok-input-tile">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 800; color: #fff;">4. OpenAI API Key</span>
-                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">GPT-4o / mini</span>
-              </div>
-              <input type="password" id="input-openai-key" class="hero-repo-input" style="width: 100%; font-size: 13px; padding: 10px 14px;" placeholder="sk-proj-********************************">
-              <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; display: block;">Fast secondary verification fallback.</span>
-            </div>
-          </div>
-
-          <!-- ACTIONS -->
-          <div style="display: flex; gap: 14px; margin-top: 28px; max-width: 440px;">
-            <button class="btn-radiant" style="flex: 2;" onclick="saveByokVault()">SAVE IN-MEMORY KEYS</button>
-            <button class="btn-auth-pill" style="flex: 1; border-color: rgba(255,69,58,0.4);" onclick="clearByokVault()">Wipe Keys</button>
-          </div>
-          <div id="byok-save-feedback" style="display: none; margin-top: 14px; font-size: 12px; font-weight: 700; color: #34C759;">
-            ✓ Keys stored in client sessionStorage. Zero server retention.
-          </div>
-        </div>
-
-        <!-- 20-MODEL CASCADE PIPELINE OVERVIEW -->
-        <div class="byok-page-card" style="margin-top: 24px;">
-          <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 8px;">⚡ 20-Model Fallback Cascade Pipeline</h3>
-          <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px;">
-            ClaimSentry routes requests through an adversarial hierarchy. If any model rate-limits or fails, the next tier triggers instantaneously with zero downtime:
-          </p>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <span class="preset-chip">1. meta/llama-3.3-70b-instruct</span>
-            <span class="preset-chip">2. nvidia/llama-3.1-nemotron-70b</span>
-            <span class="preset-chip">3. mistralai/codestral-22b</span>
-            <span class="preset-chip">4. deepseek-ai/deepseek-r1</span>
-            <span class="preset-chip">5. anthropic/claude-3-5-sonnet</span>
-            <span class="preset-chip">6. qwen/qwen2.5-coder-32b</span>
-            <span class="preset-chip">7. mistralai/mistral-large-2411</span>
-            <span class="preset-chip">8. google/gemma-2-27b-it</span>
-            <span class="preset-chip">9. openai/gpt-4o-mini</span>
-            <span class="preset-chip">10. Local AST Deterministic Engine</span>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- FLOATING BOTTOM DOCK WITH REACT BITS GOOEYNAV -->
-    <div class="floating-bottom-dock">
-      <div id="gooey-nav-container"></div>
     </div>
+
+    <!-- ACCOUNT POPOVER VIEW (OPENS WHEN ACCOUNT BUTTON CLICKED) -->
+    <div id="account-popover" class="account-popover" style="display: none;">
+      <div class="popover-arrow"></div>
+      <div class="popover-header">
+        <div class="popover-avatar-wrap">
+          <div class="popover-avatar" id="popover-avatar">AG</div>
+          <span class="popover-dot-online"></span>
+        </div>
+        <div class="popover-user-text">
+          <div class="popover-name" id="popover-name">Bhavesh Kumar</div>
+          <div class="popover-email" id="popover-email">akshatunseen@gmail.com</div>
+        </div>
+        <button class="popover-close-btn" id="btn-close-popover" title="Close">✕</button>
+      </div>
+
+      <div class="popover-divider"></div>
+
+      <div class="popover-section-label">CAPTURED IDENTITY DETAILS</div>
+      <div class="popover-info-list">
+        <div class="popover-info-row">
+          <span class="info-key">ACCOUNT ID</span>
+          <span class="info-val font-mono" id="popover-uid">---</span>
+        </div>
+        <div class="popover-info-row">
+          <span class="info-key">PROVIDER</span>
+          <span class="info-val" id="popover-provider">Google OAuth 2.0</span>
+        </div>
+        <div class="popover-info-row">
+          <span class="info-key">VERIFIED STATUS</span>
+          <span class="info-val badge-verified">✓ Active &amp; Verified</span>
+        </div>
+        <div class="popover-info-row">
+          <span class="info-key">LAST ACTIVE</span>
+          <span class="info-val" id="popover-last-login">Just now</span>
+        </div>
+        <div class="popover-info-row">
+          <span class="info-key">SANDBOX ISOLATION</span>
+          <span class="info-val badge-airgap">0.00 MBPS (Air-Gapped)</span>
+        </div>
+      </div>
+
+      <div class="popover-divider"></div>
+
+      <div class="popover-footer">
+        <button class="btn-popover-signout" id="btn-popup-sign-out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>SIGN OUT</span>
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <!-- ========================================================
-       MODAL 2: TECHNICAL PROOF DOSSIER
+       MODAL: TECHNICAL PROOF DOSSIER
        ======================================================== -->
   <div class="modal-overlay" id="proof-modal">
     <div class="obsidian-modal-box">
