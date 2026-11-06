@@ -1148,6 +1148,21 @@ function closeAccountPopover() {
   if (popover) popover.style.display = "none";
 }
 
+// 20-MODEL CASCADE MODAL CONTROLLERS
+function toggleCascadeModal() {
+  const modal = document.getElementById("cascade-models-modal");
+  const accountPopover = document.getElementById("account-popover");
+  if (!modal) return;
+  if (accountPopover) accountPopover.style.display = "none";
+  const isVisible = modal.style.display === "flex";
+  modal.style.display = isVisible ? "none" : "flex";
+}
+
+function closeCascadeModal() {
+  const modal = document.getElementById("cascade-models-modal");
+  if (modal) modal.style.display = "none";
+}
+
 // MULTI-PAGE NAVIGATION (FALLBACK COMPATIBILITY)
 function switchPage(page) {
   currentPage = page;

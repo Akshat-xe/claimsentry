@@ -85,7 +85,7 @@
 
       <div class="top-navbar-right">
         <!-- 20-MODEL CASCADE BUTTON (OPENS MODAL WITH ALL 20 FALLBACK MODELS) -->
-        <button class="cascade-btn-trigger" id="btn-cascade-toggle" title="View 20-Model Fallback Cascade">
+        <button class="cascade-btn-trigger" id="btn-cascade-toggle" onclick="toggleCascadeModal()" title="View 20-Model Fallback Cascade">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
@@ -310,7 +310,7 @@
             Active multi-tier cascade across NVIDIA NIM, DeepSeek, Claude, OpenAI, and local AST Invariant engines.
           </p>
         </div>
-        <button class="popover-close-btn" id="btn-close-cascade-modal" title="Close">✕</button>
+        <button class="popover-close-btn" id="btn-close-cascade-modal" onclick="closeCascadeModal()" title="Close">✕</button>
       </div>
 
       <div class="cascade-models-scroll" id="cascade-models-container">
